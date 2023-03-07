@@ -6,6 +6,8 @@ import datetime as dt
 
 import getdata as gd
 import filters as flt 
+import triplebarrier as tb
+
 
 df = gd.get_yf_data(tickers= "SPY AAPL ALGM DNOW", period='1y', interval='1d')
 df = df[df['Ticker'] == 'ALGM']
@@ -35,6 +37,7 @@ df['label'] = label_output['label']
 raw_time_series = df['Adj Close']
 all_events, pos_events, neg_events = flt.cusum_filter(raw_time_series, threshold=0.08, time_stamps=True)
 
+
 # create scatter
 plt.figure(figsize=(20,5))
 plt.scatter(df.index, df['Adj Close'], s=20, c=df.label, cmap='RdYlGn')
@@ -44,5 +47,16 @@ for d in neg_events:
    plt.axvline(d, color='red') 
 plt.show()
 
+# get daily volatility
 
+df['DailyVol'] = tb.getDailyVolatility(raw_time_series, span=100)
+df['DailyVol_upper'] = df['Adj Close'] + df.DailyVol/2
+df['DailyVol_lower'] = df['Adj Close'] - df.DailyVol/2
 
+# create scatter with daily vol
+fig, ax = plt.subplots()
+#plt.figure(figsize=(20,5))
+ax.plot(df.index, df['Adj Close'], '-')
+ax.fill_between(df.index, df['DailyVol_lower'], df['DailyVol_upper'], alpha = 0.1, color='b')
+
+df
