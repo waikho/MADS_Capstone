@@ -74,9 +74,9 @@ class StockTradingEnvironment(gym.Env):
             return1 = self.df.loc[self.df.index[self._current_tick], 'returns1']
             return2 = self.df.loc[self.df.index[self._current_tick], 'returns2']
             if self._position == Positions.Short:
-                step_reward += -0.5 * return1 + 0.5 * return2
+                step_reward += -0.5 * return1 + 0.5 * return2   #Positions.Short, then step_reward = short S1 long S2
             elif self._position == Positions.Long:
-                step_reward += 0.5 * return1 - 0.5 * return2
+                step_reward += 0.5 * return1 - 0.5 * return2    #Positions.Long, then step_reward = long S1 short S2
             self._current_tick += 1
             self._positionhistory.append(self._position.value)
         
@@ -95,7 +95,7 @@ class StockTradingEnvironment(gym.Env):
     def get_observation(self):
         end_index = self._current_tick
         start_index = end_index - self.window_size
-        zscore = self.df.iloc[start_index:end_index, self.df.columns.get_loc('zscore')].values
+        zscore = self.df.iloc[start_index:end_index, self.df.columns.get_loc('zscore')].values   #zscore = (ma2-ma1)/std
         return np.append(zscore, [self._position.value, self.pvalue])
 
     def render(self, mode='human', close=False):
