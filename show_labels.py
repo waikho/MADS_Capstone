@@ -21,6 +21,8 @@ window_size_max = 7
 #define threshold 
 threshold = 0.0
 
+opp_sign_ct=4
+
 # get trend scanning labels
 label_output = tlb.get_trend_scanning_labels(time_series=time_series, window_size_max=window_size_max, threshold=threshold)
 
@@ -31,20 +33,23 @@ df.drop(df.tail(n).index, inplace = True)
 # append the slope and labels to the df
 df['slope'] = label_output['slope']
 df['label'] = label_output['label']
-
+df['isEvent'] = label_output['isEvent']
+isEvent = df[df['isEvent']==1].index
 
 # get the event points with cumsum filter
-raw_time_series = df['Adj Close']
-all_events, pos_events, neg_events = flt.cusum_filter(raw_time_series, threshold=0.08, time_stamps=True)
+# raw_time_series = df['Adj Close']
+# all_events, pos_events, neg_events = flt.cusum_filter(raw_time_series, threshold=0.08, time_stamps=True)
 
 
 # create scatter
 plt.figure(figsize=(20,5))
 plt.scatter(df.index, df['Adj Close'], s=20, c=df.label, cmap='RdYlGn')
-for d in pos_events:
-   plt.axvline(d, color='green') 
-for d in neg_events:
-   plt.axvline(d, color='red') 
+# for d in pos_events:
+#    plt.axvline(d, color='green') 
+# for d in neg_events:
+#    plt.axvline(d, color='red') 
+for d in isEvent:
+   plt.axvline(d, color='blue') 
 plt.show()
 
 # get daily volatility
