@@ -52,7 +52,7 @@ def get_one_best_slope(this_y, window_size_max):
     return one_best_slope
 
 
-def get_trend_scanning_labels(time_series, window_size_max, threshold=0, opp_sign_ct=2):
+def get_trend_scanning_labels(time_series, window_size_max, threshold=0, opp_sign_ct=2, side='up'):
     """
     get trend scanning labels on entire time series
 
@@ -60,9 +60,11 @@ def get_trend_scanning_labels(time_series, window_size_max, threshold=0, opp_sig
     :param window_size_max: window size to use to calculate most signifcant slope
     :param threshold: threshold to define as no trend, value between [0,1]
     :param opp_sign_ct: # of opposite sign require before determining as trend change
+    :param side: define which trend to identify 'up', 'down', or 'both'
     :return dict of slope and threshold labels for each t except last window_size_max-1 t
     """
     d = {'slope':[], 'label':[], 'isEvent':[]}
+    arr = 0
 
     # rolling window on time series
     for i in range(len(time_series)-window_size_max+1):
@@ -74,28 +76,52 @@ def get_trend_scanning_labels(time_series, window_size_max, threshold=0, opp_sig
         
         # determine trend change
 
-        if i-opp_sign_ct > 0:
-            arr = np.sign(d['label'][i-opp_sign_ct:i])
-        else:
-            arr = 0
+        if i-opp_sign_ct >= 0 and i > 0:
 
-        # if all values are the same in the array and the sign changes
-        if arr !=0 and np.all(arr == arr[0]) and np.sign[d['label'][i-1]] != np.sign[d['label'][i]]: 
-            d['isEvent'].append(1)
+            arr = np.sign(d['label'][i-opp_sign_ct:i]) # array of last signs to check
+            this_sign = np.sign(d['label'][i])
+            # if all values are the same in the array and the sign changes
+            if np.all(arr == arr[0]) and arr[0] != this_sign: 
+                d['isEvent'].append(1 if side=='both' else (1 if side=='up' and this_sign==1 else (1 if side=='down' and this_sign==-1 else 0)))
+            else: 
+                d['isEvent'].append(0)
         else: 
             d['isEvent'].append(0)
 
     return d
 
-# opp_sign_ct = 2
-# # a = np.array([1,1,-1,-2,3,-4,5])
-# # asign = np.sign(a)
-# # signchange = ((np.roll(asign, 1) - asign) != 0).astype(int)
-# # signchange
 
 
-# lst = np.array([1,1,-1,-1,3,-4,5])
-# i = 2
-# arr = np.sign(lst[i-opp_sign_ct:i])
-# np.all(arr == arr[0])
-# lst[i]
+# import getdata as gd
+# df = gd.get_yf_data(tickers= "SPY AAPL ALGM DNOW", period='1y', interval='1d')
+# df = df[df['Ticker'] == 'ALGM']
+
+# # convert Adj Close to numpy
+# time_series = df['Adj Close'].to_numpy()
+
+# # define window size
+# window_size_max = 7
+
+# #define threshold 
+# threshold = 0.0
+
+# opp_sign_ct=2
+
+# # get trend scanning labels
+# label_output = get_trend_scanning_labels(time_series=time_series, window_size_max=window_size_max, threshold=threshold)
+
+# # opp_sign_ct = 2
+# # # a = np.array([1,1,-1,-2,3,-4,5])
+# # # asign = np.sign(a)
+# # # signchange = ((np.roll(asign, 1) - asign) != 0).astype(int)
+# # # signchange
+
+# # lst = np.array([1,1,-1,-1,3,-4,5])
+# # i = 2
+# # arr = np.sign(lst[i])
+
+# # np.all(arr == arr[0])
+# # lst[i]
+
+lst = [0,1,2]
+lst[0:0]

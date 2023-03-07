@@ -15,16 +15,14 @@ df = df[df['Ticker'] == 'ALGM']
 # convert Adj Close to numpy
 time_series = df['Adj Close'].to_numpy()
 
-# define window size
-window_size_max = 7
-
-#define threshold 
-threshold = 0.0
-
-opp_sign_ct=4
+window_size_max= 7
 
 # get trend scanning labels
-label_output = tlb.get_trend_scanning_labels(time_series=time_series, window_size_max=window_size_max, threshold=threshold)
+label_output = tlb.get_trend_scanning_labels(time_series=time_series, 
+                                             window_size_max=window_size_max, 
+                                             threshold=0.0,
+                                             opp_sign_ct=3,
+                                             side='up')
 
 # drop last rolling window size -1 rows
 n = window_size_max-1
@@ -36,9 +34,10 @@ df['label'] = label_output['label']
 df['isEvent'] = label_output['isEvent']
 isEvent = df[df['isEvent']==1].index
 
+
 # get the event points with cumsum filter
-# raw_time_series = df['Adj Close']
-# all_events, pos_events, neg_events = flt.cusum_filter(raw_time_series, threshold=0.08, time_stamps=True)
+raw_time_series = df['Adj Close']
+all_events, pos_events, neg_events = flt.cusum_filter(raw_time_series, threshold=0.08, time_stamps=True)
 
 
 # create scatter
@@ -51,6 +50,7 @@ plt.scatter(df.index, df['Adj Close'], s=20, c=df.label, cmap='RdYlGn')
 for d in isEvent:
    plt.axvline(d, color='blue') 
 plt.show()
+
 
 # get daily volatility
 
