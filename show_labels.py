@@ -6,7 +6,7 @@ import datetime as dt
 
 import getdata as gd
 import filters as flt 
-import triplebarrier as tb
+from util.volatility import getDailyVolatility
 
 
 df = gd.get_yf_data(tickers= "SPY AAPL ALGM DNOW", period='1y', interval='1d')
@@ -54,7 +54,7 @@ plt.show()
 
 # get daily volatility
 
-df['DailyVol'] = tb.getDailyVolatility(raw_time_series, span=100)
+df['DailyVol'] = getDailyVolatility(raw_time_series, span=100)
 df['DailyVol_upper'] = df['Adj Close'] + df.DailyVol/2
 df['DailyVol_lower'] = df['Adj Close'] - df.DailyVol/2
 

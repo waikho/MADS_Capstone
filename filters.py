@@ -3,7 +3,6 @@ import pandas as pd
 
 
 
-
 # Snippet 2.4, page 39, The Symmetric CUSUM Filter.
 def cusum_filter(raw_time_series, threshold, time_stamps=True):
     """
@@ -86,7 +85,7 @@ def getTEvents(gRaw, h):
     """
     tEvents, sPos, sNeg = [], 0, 0
     diff = gRaw.diff()
-    print(diff)
+
     for i in diff.index[1:]:
         sPos, sNeg = max(0, sPos+diff.loc[i]), min(0, sNeg+diff.loc[i])
         if sNeg < -h:
