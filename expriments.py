@@ -65,3 +65,4 @@ ax.plot(df.index, df['Adj Close'], '-')
 ax.fill_between(df.index, df['DailyVol_lower'], df['DailyVol_upper'], alpha = 0.1, color='b')
 
 df
+
