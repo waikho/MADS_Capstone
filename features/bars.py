@@ -59,3 +59,5 @@ def get_dollar_bars(time_bars, dollar_threshold): #function credit to Max Bodoia
 
     # return the list of dollar bars
     return dollar_bars
+
+
