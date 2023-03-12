@@ -31,8 +31,11 @@ class StockTradingEnvironment(gym.Env):
         # Actions: SHORT(0), FLAT(1), LONG(2)
         self.action_space = spaces.Discrete(3)
         self.observation_space = spaces.Box(
-          low=-np.inf, high=np.inf, shape=(window_size, 1), dtype=np.float16)
+          low=-np.inf, high=np.inf, shape=(window_size, 1), dtype=np.float16)   #a box as observation space
 
+    def test(self):
+        print('testtesttest')
+    
     def trade(self, data):
         S1 = data.iloc[:, 0]
         S2 = data.iloc[:, 1]
@@ -40,8 +43,8 @@ class StockTradingEnvironment(gym.Env):
         
         data['ratios'] = S1/S2
         ma1 = data['ratios'].rolling(window=5, center=False).mean()
-        ma2 = data['ratios'].rolling(window=60, center=False).mean()
-        std = data['ratios'].rolling(window=60, center=False).std()
+        ma2 = data['ratios'].rolling(window=60, center=False).mean()   #hard-coding window of 60
+        std = data['ratios'].rolling(window=60, center=False).std()    #hard-coding window of 60
         data['zscore'] = (ma1 - ma2)/std
 
         data['position1'] = np.where(data['zscore'] > 1.5, -1, np.nan)
@@ -53,10 +56,14 @@ class StockTradingEnvironment(gym.Env):
 
         data['returns1'] = np.log(S1/S1.shift(1)).fillna(0)
         data['returns2'] = np.log(S2/S2.shift(1)).fillna(0)
+        #strategy is doubtful
         data['strategy'] = 0.5*(data['position1'].shift(1) * data['returns1']) + 0.5*(data['position2'].shift(1) * data['returns2'])
         
-        self.df = data.iloc[60:]
+        self.df = data.iloc[60:]   #hard-coding window of 60?
         self.returns = self.df[['returns1', 'returns2', 'strategy']].dropna().cumsum().apply(np.exp).tail(1)
+        #return display(self.returns)   #new
+        #print(self.returns)
+        print('testtestets')
 
     def reset(self):
         self._done = False
