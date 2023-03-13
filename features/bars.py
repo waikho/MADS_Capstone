@@ -6,12 +6,12 @@ import math
 
 
 
-def get_dollar_bars(time_bars, dollar_threshold): #function credit to Max Bodoia
+def get_dollar_bars(time_bars, dollar_threshold, interval): #function credit to Max Bodoia
 
     """
     source of this function: https://davidzhao12.medium.com/advances-in-financial-machine-learning-for-dummies-part-1-7913aa7226f5
 
-    
+    : param interval: 'd' if using daily data, 'm' if using 1minute data
     """
 
     # initialize an empty list of dollar bars
@@ -42,7 +42,7 @@ def get_dollar_bars(time_bars, dollar_threshold): #function credit to Max Bodoia
         if dollar_volume + running_volume >= dollar_threshold:
 
             # set the timestamp for the dollar bar as the timestamp at which the bar closed (i.e. one minute after the timestamp of the last minutely bar included in the dollar bar)
-            bar_timestamp = next_timestamp + timedelta(minutes=1)
+            bar_timestamp = next_timestamp + timedelta(days=1 if interval == 'd' else 0, minutes=1 if interval =='m' else 0)
             
             # add a new dollar bar to the list of dollar bars with the timestamp, running high/low, and next close
             dollar_bars += [{'timestamp': bar_timestamp, 'open': next_open, 'high': running_high, 'low': running_low, 'close': next_close}]
