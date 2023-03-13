@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-
+import tqdm
 
 # Snippet 2.4, page 39, The Symmetric CUSUM Filter.
 def cusum_filter(raw_time_series, threshold, time_stamps=True):

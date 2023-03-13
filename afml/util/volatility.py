@@ -1,6 +1,8 @@
 import pandas as pd
 
-def getDailyVolatility(close, span=100):
+
+
+def getDailyVol(close, span=100):
     # daily vol, reindexed to close
     """
     snippet 3.1 Daily Volatility Estimates
