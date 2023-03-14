@@ -1,13 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import trendlabeling as tlb
+import strategy.trendlabeling as tlb
 import numpy as np
 import datetime as dt
 
 import getdata as gd
-import filters as flt 
-from util.volatility import getDailyVolatility
-
+import afml.filters as flt 
+import afml.util.volatility 
 
 df = gd.get_yf_data(tickers= "SPY AAPL ALGM DNOW", period='1y', interval='1d')
 df = df[df['Ticker'] == 'ALGM']
