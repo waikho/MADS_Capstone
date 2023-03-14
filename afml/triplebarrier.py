@@ -1,7 +1,7 @@
 
 import pandas as pd
 import numpy as np
-from util.multiprocess import mp_pandas_obj
+from afml.util.multiprocess import mp_pandas_obj
 
 
 
