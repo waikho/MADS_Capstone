@@ -5,8 +5,8 @@ import numpy as np
 import datetime as dt
 
 import getdata as gd
-import afml.filters as flt 
-import afml.util.volatility 
+import afml.filters.filters as flt 
+import afml.util.volatility as vol
 
 df = gd.get_yf_data(tickers= "SPY AAPL ALGM DNOW", period='1y', interval='1d')
 df = df[df['Ticker'] == 'ALGM']
@@ -53,7 +53,7 @@ plt.show()
 
 # get daily volatility
 
-df['DailyVol'] = getDailyVolatility(raw_time_series, span=100)
+df['DailyVol'] = flt.getDailyVol(raw_time_series, span=100)
 df['DailyVol_upper'] = df['Adj Close'] + df.DailyVol/2
 df['DailyVol_lower'] = df['Adj Close'] - df.DailyVol/2
 

@@ -34,7 +34,7 @@ def generate_dollarbars(trades, frequency=1000):
     ans = ans[:candle_counter]
     columns = ['time', 'open', 'high', 'low', 'close', 'volume']
     ans = pd.DataFrame(ans, columns=columns)
-    ans['time'] = ans['time'].apply(lambda x: datetime.fromtimestamp(x/1000000))
+    ans['time'] = ans['time'].apply(lambda x: datetime.utcfromtimestamp(x/1000000))
     ans.index = pd.DatetimeIndex(ans.time)
     ans = ans.drop(columns='time')
 
