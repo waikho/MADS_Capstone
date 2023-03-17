@@ -340,7 +340,7 @@ class SequentiallyBootstrappedBaggingClassifier(SequentiallyBootstrappedBaseBagg
     :param base_estimator: object or None, optional (default=None)
         The base estimator to fit on random subsets of the dataset.
         If None, then the base estimator is a decision tree.
-    :param n_estimators: int, optional (default=10)
+    :param n_estimators: int, optional (default=10)`
         The number of base estimators in the ensemble.
     :param max_samples: int or float, optional (default=1.0)
         The number of samples to draw from X to train each base estimator.
