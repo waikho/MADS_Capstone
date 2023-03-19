@@ -6,7 +6,7 @@ from typing import Callable
 import pandas as pd
 import numpy as np
 
-from sklearn.metrics import log_loss
+from sklearn.metrics import log_loss, f1_score
 from sklearn.model_selection import KFold
 from sklearn.base import ClassifierMixin
 from sklearn.model_selection import BaseCrossValidator
@@ -27,7 +27,8 @@ def ml_get_train_times(samples_info_sets: pd.Series, test_times: pd.Series) -> p
     :param test_times: Times for the test dataset.
     """
     train = samples_info_sets.copy(deep=True)
-    for start_ix, end_ix in test_times.iteritems():
+    #for start_ix, end_ix in test_times.iteritems():
+    for start_ix, end_ix in iter(test_times.items()):
         df0 = train[(start_ix <= train.index) & (train.index <= end_ix)].index  # Train starts within test
         df1 = train[(start_ix <= train) & (train <= end_ix)].index  # Train ends within test
         df2 = train[(train.index <= start_ix) & (end_ix <= train)].index  # Train envelops test
@@ -146,6 +147,6 @@ def ml_cross_val_score(
             score = -1 * scoring(y.iloc[test], prob, sample_weight=sample_weight[test], labels=classifier.classes_)
         else:
             pred = fit.predict(X.iloc[test, :])
-            score = scoring(y.iloc[test], pred, sample_weight=sample_weight[test])
+            score = f1_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
         ret_scores.append(score)
     return np.array(ret_scores)

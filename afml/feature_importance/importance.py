@@ -4,7 +4,7 @@ Module which implements feature importance algorithms as described in Chapter 8 
 
 import pandas as pd
 import numpy as np
-from sklearn.metrics import log_loss
+from sklearn.metrics import log_loss, f1_score
 import matplotlib.pyplot as plt
 from afml.cross_validation.cross_validation import ml_cross_val_score
 
@@ -107,7 +107,7 @@ def mean_decrease_accuracy(model, X, y, cv_gen, sample_weight=None, scoring=log_
             fold_metrics_values.loc[i] = -scoring(y.iloc[test], prob, sample_weight=sample_weight[test],
                                                   labels=model.classes_)
         else:
-            fold_metrics_values.loc[i] = scoring(y.iloc[test], pred, sample_weight=sample_weight[test])
+            fold_metrics_values.loc[i] = f1_score(y.iloc[test], pred, sample_weight=sample_weight[test])
 
         # Get feature specific metric on out-of-sample fold
         for j in X.columns:
@@ -119,7 +119,7 @@ def mean_decrease_accuracy(model, X, y, cv_gen, sample_weight=None, scoring=log_
                                                              labels=model.classes_)
             else:
                 pred = fit.predict(X1_)
-                features_metrics_values.loc[i, j] = scoring(y.iloc[test], pred,
+                features_metrics_values.loc[i, j] = f1_score(y.iloc[test], pred,
                                                             sample_weight=sample_weight[test])
 
     importance = (-features_metrics_values).add(fold_metrics_values, axis=0)
