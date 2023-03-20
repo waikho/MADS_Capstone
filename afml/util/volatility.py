@@ -19,7 +19,7 @@ def getDailyVol(close, span=100):
     # get the begin and end date for price comparison
     df = (pd.Series(close.index[df-1], index=close.index[close.shape[0]-df.shape[0]:]))
 
-    df = close.loc[df.index]/close.loc[df.values].values-1 #daily returns
+    df = close.loc[df.index]/close.loc[df.array].array-1 #daily returns
     df = df.ewm(span=span).std() #exponentially weighted moving std dev 
 
     return df

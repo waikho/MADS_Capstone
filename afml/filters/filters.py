@@ -73,9 +73,9 @@ def cusum_filter(raw_time_series, threshold, time_stamps=True):
         event_timestamps = pd.DatetimeIndex(t_events)
         event_timestamps_pos = pd.DatetimeIndex(t_events_pos)
         event_timestamps_neg = pd.DatetimeIndex(t_events_neg)
-        return event_timestamps, event_timestamps_pos, event_timestamps_neg
+        return event_timestamps
 
-    return t_events, t_events_pos, t_events_neg
+    return t_events
 
 def getTEvents(gRaw, h):
     """
