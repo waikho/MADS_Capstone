@@ -122,7 +122,8 @@ def get_events(close, t_events, pt_sl, target, min_ret, num_threads, vertical_ba
     """
 
     # 1) Get target
-    target = target.loc[t_events]
+    #target = target.loc[t_events]
+    merged = pd.merge(target, t_events, left_index=True, right_on='')
     target = target[target > min_ret]  # min_ret
 
     # 2) Get vertical barrier (max holding period)
