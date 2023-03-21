@@ -156,8 +156,8 @@ def ml_cross_val_score(
             recall = recall_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
             precision = precision_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
             ret_scores.append(score)
-            recall_scores.append(score)
-            precision_scores.append(score)
+            recall_scores.append(recall)
+            precision_scores.append(precision)
 
 
     return np.array(ret_scores) if scoring == log_loss else np.array(ret_scores), np.array(recall_scores), np.array(precision_scores)
