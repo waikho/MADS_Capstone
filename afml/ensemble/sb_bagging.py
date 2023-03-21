@@ -321,8 +321,7 @@ class SequentiallyBootstrappedBaseBagging(BaseBagging, metaclass=ABCMeta):
         return self
 
 
-class SequentiallyBootstrappedBaggingClassifier(SequentiallyBootstrappedBaseBagging, BaggingClassifier,
-                                                ClassifierMixin):
+class SequentiallyBootstrappedBaggingClassifier(SequentiallyBootstrappedBaseBagging, BaggingClassifier, ClassifierMixin):
     """
     A Sequentially Bootstrapped Bagging classifier is an ensemble meta-estimator that fits base
     classifiers each on random subsets of the original dataset generated using

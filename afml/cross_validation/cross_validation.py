@@ -6,7 +6,7 @@ from typing import Callable
 import pandas as pd
 import numpy as np
 
-from sklearn.metrics import log_loss, f1_score
+from sklearn.metrics import log_loss, f1_score, recall_score, precision_score
 from sklearn.model_selection import KFold
 from sklearn.base import ClassifierMixin
 from sklearn.model_selection import BaseCrossValidator
@@ -118,6 +118,8 @@ def ml_cross_val_score(
     be passed to the function. To correct this we have removed the default and require the user to pass a CV object to
     the function.
 
+    Updated to include f1, recall and precision if log+loss is not the scoring method
+
     Example:
 
     .. code-block:: python
@@ -131,7 +133,7 @@ def ml_cross_val_score(
     :param cv_gen: Cross Validation generator object instance.
     :param sample_weight: A numpy array of weights for each record in the dataset.
     :param scoring: A metric scoring, can be custom sklearn metric.
-    :return: The computed score as a numpy array.
+    :return: The computed score as a numpy array if log_loss or f1, recall and precision if not log_loss
     """
 
     # If no sample_weight then broadcast a value of 1 to all samples (full weight).
@@ -140,13 +142,22 @@ def ml_cross_val_score(
 
     # Score model on KFolds
     ret_scores = []
+    recall_scores = []
+    precision_scores = []
     for train, test in cv_gen.split(X=X, y=y):
         fit = classifier.fit(X=X.iloc[train, :], y=y.iloc[train], sample_weight=sample_weight[train])
         if scoring == log_loss:
             prob = fit.predict_proba(X.iloc[test, :])
             score = -1 * scoring(y.iloc[test], prob, sample_weight=sample_weight[test], labels=classifier.classes_)
+            ret_scores.append(score)
         else:
             pred = fit.predict(X.iloc[test, :])
             score = f1_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
-        ret_scores.append(score)
-    return np.array(ret_scores)
+            recall = recall_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
+            precision = precision_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
+            ret_scores.append(score)
+            recall_scores.append(score)
+            precision_scores.append(score)
+
+
+    return np.array(ret_scores) if scoring == log_loss else np.array(ret_scores), np.array(recall_scores), np.array(precision_scores)
