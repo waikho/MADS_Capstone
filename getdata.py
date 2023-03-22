@@ -10,7 +10,9 @@ def get_yf_data(tickers= "SPY AAPL ALGM DNOW", period='1y', interval='1d', ignor
                 interval = interval, #"60m",       # trading interval
                 ignore_tz = True,      # ignore timezone when aligning data from different exchanges?
                 prepost = False,       # download pre/post market hours data?
-                group_by='ticker')
+                group_by='ticker',
+                )
+
     df = pd.DataFrame(data).stack(level=0).rename_axis(['Date', 'Ticker']).reset_index(level=1)
 
     return df

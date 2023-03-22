@@ -4,7 +4,7 @@ import pandas as pd
 import tqdm
 
 # Snippet 2.4, page 39, The Symmetric CUSUM Filter.
-def cusum_filter(raw_time_series, threshold, time_stamps=True):
+def cusum_filter(raw_time_series, threshold, signal=None, time_stamps=True):
     """
     Snippet 2.4, page 39, The Symmetric Dynamic/Fixed CUSUM Filter.
     The CUSUM filter is a quality-control method, designed to detect a shift in the
@@ -24,6 +24,7 @@ def cusum_filter(raw_time_series, threshold, time_stamps=True):
     :param raw_time_series: (series) of close prices (or other time series, e.g. volatility).
     :param threshold: (float or pd.Series) when the abs(change) is larger than the threshold, the function captures
     it as an event, can be dynamic if threshold is pd.Series
+    :param signal: (str) 'buy' for only buy signals, 'sell' for only sell signals, None for both signals
     :param time_stamps: (bool) default is to return a DateTimeIndex, change to false to have it return a list.
     :return: (datetime index vector) vector of datetimes when the events occurred. This is used later to sample.
     """
@@ -70,12 +71,16 @@ def cusum_filter(raw_time_series, threshold, time_stamps=True):
 
     # Return DatetimeIndex or list
     if time_stamps:
-        event_timestamps = pd.DatetimeIndex(t_events)
-        event_timestamps_pos = pd.DatetimeIndex(t_events_pos)
-        event_timestamps_neg = pd.DatetimeIndex(t_events_neg)
-        return event_timestamps
-
-    return t_events
+        t_events = pd.DatetimeIndex(t_events)
+        t_events_pos = pd.DatetimeIndex(t_events_pos)
+        t_events_neg = pd.DatetimeIndex(t_events_neg)
+    
+    if signal == 'buy':
+        return t_events_pos
+    elif signal == 'sell':
+        return t_events_neg
+    else:
+        return t_events
 
 def getTEvents(gRaw, h):
     """

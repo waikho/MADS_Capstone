@@ -6,7 +6,7 @@ from typing import Callable
 import pandas as pd
 import numpy as np
 
-from sklearn.metrics import log_loss, f1_score, recall_score, precision_score
+from sklearn.metrics import log_loss, f1_score, recall_score, precision_score, accuracy_score
 from sklearn.model_selection import KFold
 from sklearn.base import ClassifierMixin
 from sklearn.model_selection import BaseCrossValidator
@@ -144,6 +144,7 @@ def ml_cross_val_score(
     ret_scores = []
     recall_scores = []
     precision_scores = []
+    accuracy_scores=[]
     for train, test in cv_gen.split(X=X, y=y):
 
         #kwargs = {classifier.steps[-1][0] + '__sample_weight': sample_weight}
@@ -158,9 +159,11 @@ def ml_cross_val_score(
             score = f1_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
             recall = recall_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
             precision = precision_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
+            accuracy = accuracy_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
             ret_scores.append(score)
             recall_scores.append(recall)
             precision_scores.append(precision)
+            accuracy_scores.append(accuracy)
 
 
-    return np.array(ret_scores) if scoring == log_loss else np.array(ret_scores), np.array(recall_scores), np.array(precision_scores)
+    return np.array(ret_scores) if scoring == log_loss else np.array(ret_scores), np.array(recall_scores), np.array(precision_scores), np.array(accuracy_scores)
