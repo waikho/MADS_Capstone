@@ -145,6 +145,9 @@ def ml_cross_val_score(
     recall_scores = []
     precision_scores = []
     for train, test in cv_gen.split(X=X, y=y):
+
+        #kwargs = {classifier.steps[-1][0] + '__sample_weight': sample_weight}
+        #fit = classifier.fit(X=X.iloc[train, :], y=y.iloc[train], **kwargs)
         fit = classifier.fit(X=X.iloc[train, :], y=y.iloc[train], sample_weight=sample_weight[train])
         if scoring == log_loss:
             prob = fit.predict_proba(X.iloc[test, :])
