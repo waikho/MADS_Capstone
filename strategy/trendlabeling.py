@@ -11,6 +11,8 @@ def get_one_slope(window_size, this_y):
     this_x = np.arange(1,window_size+1).reshape((-1,1))
     trimmed_this_y = (this_y[0:window_size])
 
+
+
     # fit linear regression model
     this_reg = LinearRegression().fit(this_x, trimmed_this_y)
 
@@ -39,12 +41,13 @@ def get_one_best_slope(this_y, window_size_max):
     
     """
     # window size cannot be less than 3 coz demon will become <0 when calculating mean sq errors
-    window_size_min = 3 
-    window_size_max = 3 if window_size_max < 3 else window_size_max
+    #window_size_min = 3 
+    #window_size_max = 3 if window_size_max < 3 else window_size_max
     d = {}
 
-    for window_size in range(window_size_min, window_size_max+1):
-        d[window_size] = get_one_slope(window_size=window_size, this_y=this_y)
+    #for window_size in range(window_size_min, window_size_max+1):
+    for i in range(3, window_size_max):
+        d[i] = get_one_slope(window_size=i, this_y=this_y)
 
     max_key = max(d, key=lambda k: d[k][0]) #get the key of with the best abs t-value
     one_best_slope = d[max_key][1]
@@ -63,30 +66,33 @@ def get_trend_scanning_labels(time_series, window_size_max, threshold=0, opp_sig
     :param side: define which trend to identify 'up', 'down', or 'both'
     :return dict of slope and threshold labels for each t except last window_size_max-1 t
     """
-    d = {'slope':[], 'label':[], 'isEvent':[]}
+    d = {'slope':[], 'label':[], 
+        #  'isEvent':[]
+        }
     arr = 0
 
     # rolling window on time series
-    for i in range(len(time_series)-window_size_max+1):
+    for i in range(window_size_max, len(time_series)+1):
+    #for i in range(len(time_series)-window_size_max+1):
         # define window of data
-        this_y = (time_series[i:i+window_size_max])
+        this_y = (time_series[i-window_size_max:i])
         this_one_best_slope = get_one_best_slope(this_y, window_size_max=window_size_max)
         d['slope'].append(this_one_best_slope)
         d['label'].append(1 if this_one_best_slope >= threshold else (-1 if this_one_best_slope < -threshold else 0))
         
-        # determine trend change
+        # # determine trend change
 
-        if i-opp_sign_ct >= 0 and i > 0:
+        # if i-opp_sign_ct >= 0 and i > 0:
 
-            arr = np.sign(d['label'][i-opp_sign_ct:i]) # array of last signs to check
-            this_sign = np.sign(d['label'][i])
-            # if all values are the same in the array and the sign changes
-            if np.all(arr == arr[0]) and arr[0] != this_sign: 
-                d['isEvent'].append(1 if side=='both' else (1 if side=='up' and this_sign==1 else (1 if side=='down' and this_sign==-1 else 0)))
-            else: 
-                d['isEvent'].append(0)
-        else: 
-            d['isEvent'].append(0)
+        #     arr = np.sign(d['label'][i-opp_sign_ct:i]) # array of last signs to check
+        #     this_sign = np.sign(d['label'][i])
+        #     # if all values are the same in the array and the sign changes
+        #     if np.all(arr == arr[0]) and arr[0] != this_sign: 
+        #         d['isEvent'].append(1 if side=='both' else (1 if side=='up' and this_sign==1 else (1 if side=='down' and this_sign==-1 else 0)))
+        #     else: 
+        #         d['isEvent'].append(0)
+        # else: 
+        #     d['isEvent'].append(0)
 
     return d
 
