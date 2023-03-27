@@ -39,4 +39,3 @@ def generate_dollarbars(trades, frequency=1000):
     ans = ans.drop(columns='time')
 
     return ans
-
