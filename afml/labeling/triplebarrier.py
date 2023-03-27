@@ -238,6 +238,7 @@ def get_bins(triple_barrier_events, close):
     # Need to take the log returns, else your results will be skewed for short positions
     out_df['ret'] = np.log(prices.loc[events_['t1'].array].array) - np.log(prices.loc[events_.index])
     out_df['trgt'] = events_['trgt']
+    out_df['t1'] = events_['t1']
 
     # Meta labeling: Events that were correct will have pos returns
     if 'side' in events_:
