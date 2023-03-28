@@ -4,7 +4,7 @@ import numpy as np
 import config
 import psycopg
 from psycopg.rows import dict_row
-from getdata import pgDictToConn, getTicker
+import getdata as gd
 
 import strategy.trendlabeling as tlb
 
@@ -20,16 +20,34 @@ import crossvalidation as cv
 from sklearn.model_selection import train_test_split, KFold
 
 
+def get_alpaca_daily_data(ticker, index=['SPY'], config=config.pgSecrets):
+    """
+    :param ticker: list of tickers as string
+    :param index: list of index as string
+    :param secrets: secrets and key
+    
+    :return tuple of dataframes - df for selected tickers, df for selected index tickers 
+    """
+    ticker_df = pd.DataFrame()
+    index_df = pd.DataFrame()
+
+    for t in ticker:
+        _df = gd.getTicker(t, config=config)
+        ticker_df = pd.concat(ticker_df, _df) 
+
+    if index:
+        for i in index:
+            _df = gd.getTicker(i, config=config)
+            index_df = pd.concat(index_df, _df) 
+
+    return ticker_df, index_df if index_df else None
 
 
+def preprocessing():
 
-pgConnStr = pgDictToConn(config.pgSecrets)
+    return None
 
-df = getTicker('STBA')
-df.index = pd.to_datetime(df.datetime)
 
-index_SPY = getTicker('SPY')
-index_SPY.index = pd.to_datetime(index_SPY.datetime)
 
 # get trades to form dollar bars
 trades = df[['datetime', 'close', 'vol']].to_numpy()
