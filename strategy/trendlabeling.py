@@ -55,7 +55,7 @@ def get_one_best_slope(this_y, window_size_max):
     return one_best_slope
 
 
-def get_trend_scanning_labels(time_series, window_size_max, threshold=0, opp_sign_ct=2, side='up'):
+def get_trend_scanning_labels(time_series, window_size_max, threshold=0, side='both'):
     """
     get trend scanning labels on entire time series
 
@@ -79,20 +79,7 @@ def get_trend_scanning_labels(time_series, window_size_max, threshold=0, opp_sig
         this_one_best_slope = get_one_best_slope(this_y, window_size_max=window_size_max)
         d['slope'].append(this_one_best_slope)
         d['label'].append(1 if this_one_best_slope >= threshold else (-1 if this_one_best_slope < -threshold else 0))
-        
-        # # determine trend change
-
-        # if i-opp_sign_ct >= 0 and i > 0:
-
-        #     arr = np.sign(d['label'][i-opp_sign_ct:i]) # array of last signs to check
-        #     this_sign = np.sign(d['label'][i])
-        #     # if all values are the same in the array and the sign changes
-        #     if np.all(arr == arr[0]) and arr[0] != this_sign: 
-        #         d['isEvent'].append(1 if side=='both' else (1 if side=='up' and this_sign==1 else (1 if side=='down' and this_sign==-1 else 0)))
-        #     else: 
-        #         d['isEvent'].append(0)
-        # else: 
-        #     d['isEvent'].append(0)
+    
 
     return d
 

@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 
-def generate_dollarbars(trades, frequency=1000):
+def generate_dollarbars(trades, dv_thres=1000):
 
     """
     # expects a numpy array with trades
@@ -20,7 +20,7 @@ def generate_dollarbars(trades, frequency=1000):
     lasti = 0
     for i in range(len(prices)):
         dollars += volumes[i]*prices[i]
-        if dollars >= frequency:
+        if dollars >= dv_thres:
             ans[candle_counter][0] = np.datetime64(times[i])       # time
             ans[candle_counter][1] = prices[lasti]                     # open
             ans[candle_counter][2] = np.max(prices[lasti:i+1])         # high

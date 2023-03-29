@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 from afml.util.multiprocess import mp_pandas_obj
 
-
-
-
 def get_firstbarrier_touchtime(close, events, pt_sl, molecule):
     """
 
