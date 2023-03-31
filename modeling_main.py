@@ -20,7 +20,28 @@ from afml.cross_validation.cross_validation import PurgedKFold
 import crossvalidation as cv
 
 from sklearn.model_selection import train_test_split, KFold
-from sklearn.metrics import accuracy_score, recall_score, precision_score
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
+
+
+def get_data(ticker):
+
+    df = gd.getTicker_Daily(ticker)
+    df.index = df.tranx_date
+
+    return df
+
+def get_index(ticker_df, index_ticker='SPY'):
+    """
+    return df for a selected index that matches the ticker
+    
+    """
+    start_date = ticker_df.tranx_date.min()
+    end_date = ticker_df.tranx_date.max()
+    df = gd.getTicker_Daily(index_ticker)
+    index_df = df[df['tranx_date'].between(start_date, end_date)]
+    index_df.index = index_df.tranx_date
+
+    return index_df
 
 
 def normalizing(ticker_df, dv_multiple=2):
@@ -39,6 +60,7 @@ def normalizing(ticker_df, dv_multiple=2):
     dollar_bars = bars.generate_dollarbars(trades, dv_thres=dv_thres) 
 
     return dollar_bars
+
 
 def trend_labeling(dollar_bars, window_size_max=7):
     """
@@ -234,7 +256,7 @@ def modeling(dollar_bars, type='seq_boot_SVC', RANDOM_STATE = 42):
     test_results = {
         'type':'seq_boot_SVC',
         'best_model':clf,
-        'best_cross_val_score':f1(np.array(y.iloc[y_test]), y_pred, sample_weight=return_based_sample_weights_test),
+        'best_cross_val_score':f1_score(np.array(y.iloc[y_test]), y_pred, sample_weight=return_based_sample_weights_test),
         'recall': recall_score(np.array(y.iloc[y_test]), y_pred, sample_weight=return_based_sample_weights_test),
         'precision':precision_score(np.array(y.iloc[y_test]), y_pred, sample_weight=return_based_sample_weights_test), 
         'accuracy':accuracy_score(np.array(y.iloc[y_test]), y_pred, sample_weight=return_based_sample_weights_test),
