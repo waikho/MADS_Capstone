@@ -205,7 +205,8 @@ class StockTradingEnvironment(gym.Env):
         #mask = pd.Series(self._positionhistory, index=self.df.index[start_index:end_index])
         #mask = pd.DataFrame(self._positionhistory, index=self.df.index[start_index:end_index])    ###changed###
         #short_mask = pd.DataFrame(self._positionhistory[-244:], index=self.df.index[-244:])   #newly created to plot twists
-        short_mask = pd.DataFrame(self._positionhistory[-230:], index=self.df.index[-230:])   #newly created to plot twists
+        short_start_index = max(-365, -len(self._positionhistory))   #to shorten the plot, subject to lower of -244 and len(positionhistory)
+        short_mask = pd.DataFrame(self._positionhistory[short_start_index:], index=self.df.index[short_start_index:])   #newly created to plot twists
         
         
         #new
@@ -367,9 +368,7 @@ class StockTradingEnvironment(gym.Env):
         plt.figure(figsize=(16,6))
 
         start_index = self.window_size
-        #short_start_index = len(self._positionhistory) - 244   #to shorten the plot
-        #short_start_index = -244   #to shorten the plot
-        short_start_index = -230   #to shorten the plot
+        short_start_index = max(-365, -len(self._positionhistory))   #to shorten the plot, subject to lower of -244 and len(positionhistory)
         end_index = start_index + len(self._positionhistory)
         #S1 = self.df.iloc[start_index:end_index, 0]
         #S2 = self.df.iloc[start_index:end_index, 1]

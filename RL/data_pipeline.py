@@ -32,7 +32,8 @@ def pgDictToConn(secretDict):
 
 #get daily prices
 def getDailyPrices(symbol_lst, pgConnStr):
-    df = pd.DataFrame()
+    #df = pd.DataFrame()
+    dfs = []
 
     with psycopg.connect(pgConnStr) as conn:
         with conn.cursor() as cur:
@@ -42,11 +43,31 @@ def getDailyPrices(symbol_lst, pgConnStr):
                 cur.execute(stmt, data)
                 rows = cur.fetchall()
                 ticker_df = pd.DataFrame(rows, columns=['tranx_date',symbol])
-                ticker_df.drop_duplicates(subset=['tranx_date']).set_index('tranx_date')   ###alpaca data may have duplicate prices for the same datetime###
-                df = pd.concat([df, ticker_df[symbol]], axis=1)
-                
-    return df
+                #ticker_df.drop_duplicates(subset=['tranx_date']).set_index('tranx_date')   ###alpaca data may have duplicate prices for the same datetime###
+                #df = pd.concat([df, ticker_df[symbol]], axis=1)
+                #below are suggested by CGPT
+                ticker_df.drop_duplicates(subset=['tranx_date'], inplace=True)
+                ticker_df.set_index('tranx_date', inplace=True)
+                dfs.append(ticker_df)
 
+                # Combine dataframes using outer join
+                combined_df = pd.concat(dfs, axis=1, sort=True)
+
+                # Set index to datetime format
+                combined_df.index = pd.to_datetime(combined_df.index)
+
+                # Find earliest and latest dates
+                earliest_date = combined_df.index.min()
+                latest_date = combined_df.index.max()
+
+                # Reindex to fill missing dates with NaN
+                idx = pd.date_range(start=earliest_date, end=latest_date)
+                combined_df = combined_df.reindex(idx, method='ffill')
+                combined_df = combined_df.reindex(idx, method='bfill')
+                
+    return combined_df
+    #return df
+    
 
 #get distinct tickers from daily prices
 def getDailyPricesTickersLst(pgConnStr):
