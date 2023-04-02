@@ -26,6 +26,7 @@ from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_sc
 def get_data(ticker):
 
     df = gd.getTicker_Daily(ticker)
+    df = df.sort_values(by='tranx_date')
     df.index = df.tranx_date
 
     return df
@@ -38,7 +39,8 @@ def get_index(ticker_df, index_ticker='SPY'):
     start_date = ticker_df.tranx_date.min()
     end_date = ticker_df.tranx_date.max()
     df = gd.getTicker_Daily(index_ticker)
-    index_df = df[df['tranx_date'].between(start_date, end_date)]
+    df = df.sort_values(by='tranx_date')
+    index_df = df[(df['tranx_date']>=start_date) & (df['tranx_date']<=end_date)]
     index_df.index = index_df.tranx_date
 
     return index_df
@@ -55,9 +57,8 @@ def normalizing(ticker_df, dv_multiple=2):
     """
         
     # generate dollar bars
-    trades = ticker_df[['datetime', 'close', 'vol']].to_numpy()
     dv_thres = (ticker_df['vol']*ticker_df['close']).resample('D').sum()[:-10].mean()*dv_multiple # average of the dollar value from the last 10 days * 2
-    dollar_bars = bars.generate_dollarbars(trades, dv_thres=dv_thres) 
+    dollar_bars = bars.generate_dollarbars(ticker_df, dv_thres=dv_thres) 
 
     return dollar_bars
 
@@ -82,7 +83,7 @@ def trend_labeling(dollar_bars, window_size_max=7):
 
     return dollar_bars
 
-def meta_labeling(dollar_bars, span=50, filter_multiple=0.5, num_days=5, ptsl=[1.5,1], minRet=0.015):
+def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=5, ptsl=[1.5,1], minRet=0.0):
     """
     Perform meta-labeling for one ticker
 
@@ -131,7 +132,7 @@ def meta_labeling(dollar_bars, span=50, filter_multiple=0.5, num_days=5, ptsl=[1
     clean_labels  = tbar.drop_labels(labels)
 
     # join labels back to dataframe
-    dollar_bars = dollar_bars.join(clean_labels['bin']).join(events[['t1','target','isEvent']])
+    dollar_bars = dollar_bars.join(clean_labels[['bin','ret']]).join(events[['t1','trgt','isEvent']])
 
     return dollar_bars
 
@@ -196,13 +197,25 @@ def features_SPY_RS(dollar_bars, dollar_bars_SPY):
     add relative strength SPY at various -t to dollar bar df of one ticker
     
     """
-    # todo - add SPY data
-
     dollar_bars['rs_SPY_1'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_SPY.close).shift(1)
     dollar_bars['rs_SPY_2'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_SPY.close).shift(2)
     dollar_bars['rs_SPY_3'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_SPY.close).shift(3)
     dollar_bars['rs_SPY_4'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_SPY.close).shift(4)
     dollar_bars['rs_SPY_5'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_SPY.close).shift(5)
+
+    return dollar_bars
+
+
+def features_COMP_RS(dollar_bars, dollar_bars_COMP):
+    """
+    add relative strength SPY at various -t to dollar bar df of one ticker
+    
+    """
+    dollar_bars['rs_COMP_1'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(1)
+    dollar_bars['rs_COMP_2'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(2)
+    dollar_bars['rs_COMP_3'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(3)
+    dollar_bars['rs_COMP_4'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(4)
+    dollar_bars['rs_COMP_5'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(5)
 
     return dollar_bars
 
@@ -222,7 +235,7 @@ def modeling(dollar_bars, type='seq_boot_SVC', RANDOM_STATE = 42):
     _X = dollar_bars.iloc[:, :-1]
     y = dollar_bars.iloc[:, -1]
     col = ['index', 'tranx_date', 'symbol', 'open', 'close', 'high', 'low', 'vol', 'vwap', 'trade_count',
-           't1', 'target'
+           't1', 'target', 'ret'
            ]
     X = _X.drop(col, axis=1)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False, random_state=RANDOM_STATE)
@@ -293,7 +306,17 @@ def get_one_model(ticker, config=config.pgSecrets):
     dollar_bars = features_volatility(dollar_bars)
     dollar_bars = features_log_returns(dollar_bars)
     dollar_bars = features_serial_correlation(dollar_bars)
-    #dollar_bars = features_SPY_RS(dollar_bars)
+
+    # add features - relative strength to SPY
+    index_SPY = get_index(ticker_df, 'SPY')
+    dollar_bars_SPY = bars.transform_index_based_on_dollarbar(dollar_bars, index_SPY)
+    dollar_bars = features_SPY_RS(dollar_bars, dollar_bars_SPY)
+
+    # # add features - relative strength to COMP
+    # index_COMP = get_index(ticker_df, 'COMP')
+    # dollar_bars_COMP = bars.transform_index_based_on_dollarbar(dollar_bars, index_COMP)
+    # dollar_bars = features_COMP_RS(dollar_bars, dollar_bars_COMP)
+   
 
     # get the output model and train test metrics
     clf, model_metrics = modeling(dollar_bars)

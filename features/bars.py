@@ -20,7 +20,7 @@ def generate_dollarbars(ticker_df, dv_thres=1000):
     dollars = 0
     lasti = 0
     temp_dict = {}
-    for i in range(len(prices)):
+    for i in range(len(times)):
         dollars += volumes[i]*prices[i]
         if dollars >= dv_thres:
             temp_dict['time'] = times[i]       # time
@@ -29,13 +29,11 @@ def generate_dollarbars(ticker_df, dv_thres=1000):
             temp_dict['low'] = np.min(prices[lasti:i+1])         # low
             temp_dict['close'] = prices[i]                         # close
             temp_dict['volume'] = np.sum(volumes[lasti:i+1])        # volume
-            
             ans = pd.concat([ans, pd.DataFrame([temp_dict])], ignore_index=True)
-
             candle_counter += 1
             lasti = i+1
             dollars = 0
-
+    ans = ans.sort_values(by='time')
     ans.index = pd.DatetimeIndex(ans.time)
     ans = ans.drop(columns='time')
 
@@ -48,25 +46,24 @@ def transform_index_based_on_dollarbar(dollar_bars, index_df):
 
     """
     db_dates = dollar_bars.index
-    ans = pd.DataFrame(columns = ['time', 'open', 'high', 'low', 'close', 'volume'], index=db_dates)
+    ans = pd.DataFrame(columns = ['open', 'high', 'low', 'close', 'volume'], index=db_dates)
 
     for i, ed_date in enumerate(db_dates):
         if i == 0:
             st_date=index_df.index.min()
         else:
-            st_date=db_dates[i]
-        
-        sub_df = index_df[(index_df['tranx_date']>st_date) & (index_df['tranx_date']<=ed_date)]
+            st_date=db_dates[i-1]
 
-        ans.loc[ed_date]['time'] = ed_date                      # time
-        ans.loc[ed_date]['open'] = index_df.loc[st_date].open   # open
+        sub_df = index_df[(index_df.index >=st_date) & (index_df.index <=ed_date)]
+
+        ans.loc[ed_date]['open'] = index_df.loc[st_date].close   # open
         ans.loc[ed_date]['high'] = np.max(sub_df.close)         # high
         ans.loc[ed_date]['low'] = np.min(sub_df.close)          # low
         ans.loc[ed_date]['close'] = index_df.loc[ed_date].close # close
         ans.loc[ed_date]['volume'] = np.sum(sub_df.vol)         # volume
 
-    ans.index = pd.DatetimeIndex(ans.time)
-    ans = ans.drop(columns='time')
-
+    ans = ans.sort_values(by='time')
+    ans.index = pd.DatetimeIndex(ans.index)
+    ans = ans.astype({col: float for col in ans.columns if col != 'time'})
 
     return ans
