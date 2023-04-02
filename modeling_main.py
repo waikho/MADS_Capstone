@@ -7,6 +7,7 @@ from psycopg.rows import dict_row
 import getdata as gd
 import platform, os
 import datetime
+import time
 
 import strategy.trendlabeling as tlb
 
@@ -19,6 +20,7 @@ import features.marketindicators as mkt
 from afml.cross_validation.cross_validation import PurgedKFold
 import crossvalidation as cv
 
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 
@@ -36,10 +38,18 @@ def get_index(ticker_df, index_ticker='SPY'):
     return df for a selected index that matches the ticker
     
     """
-    start_date = ticker_df.tranx_date.min()
-    end_date = ticker_df.tranx_date.max()
     df = gd.getTicker_Daily(index_ticker)
     df = df.sort_values(by='tranx_date')
+
+    tic_start_date = ticker_df.tranx_date.min()
+    tic_end_date = ticker_df.tranx_date.max()
+
+    idx_start_date = df.tranx_date.min()
+    idx_end_date = df.tranx_date.max()
+
+    start_date = max([tic_start_date, idx_start_date])
+    end_date = min([tic_end_date, idx_end_date])
+
     index_df = df[(df['tranx_date']>=start_date) & (df['tranx_date']<=end_date)]
     index_df.index = index_df.tranx_date
 
@@ -95,7 +105,7 @@ def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=5, ptsl=[1
     :param minRet: (float) defines the minimum % return to capture the event as a tradable event, default is 0.015 where 0.01 is \
         considered as transaction fees and 0.005 as slippage
 
-    :return dollar_bars: (dataframe) DateTimeIndex of tradable events
+    :return events, dollar_bars: (tuple of dataframe, dataframe) DateTimeIndex of tradable events from triple barrier method, dollar bars with events data
     """
 
     # get 50-day exponential rolling volatility
@@ -123,7 +133,6 @@ def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=5, ptsl=[1
                                 num_threads=cpus, 
                                 vertical_barrier_times=t1,
                                 side_prediction=dollar_bars.label).dropna()
-    events['isEvent'] = 1
 
     # get the triple barrier labels for all tradable events 
     labels = tbar.get_bins(triple_barrier_events = events, close=close)
@@ -132,9 +141,12 @@ def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=5, ptsl=[1
     clean_labels  = tbar.drop_labels(labels)
 
     # join labels back to dataframe
-    dollar_bars = dollar_bars.join(clean_labels[['bin','ret']]).join(events[['t1','trgt','isEvent']])
+    dollar_bars = dollar_bars.join(clean_labels['bin'])
 
-    return dollar_bars
+    # join the ret from dollar_bars to event df
+    events = events.join(clean_labels[['bin', 'ret']]).join(dollar_bars[['close', 'label']])
+
+    return events, dollar_bars
 
 def features_momentum(dollar_bars):
     """
@@ -219,34 +231,33 @@ def features_COMP_RS(dollar_bars, dollar_bars_COMP):
 
     return dollar_bars
 
-def modeling(dollar_bars, type='seq_boot_SVC', RANDOM_STATE = 42):
+def modeling(symbol, events, dollar_bars, type='seq_boot_SVC', RANDOM_STATE = 42):
     """
     modeling and perform hyperparameter tuning for a single stock dataframe
     dataframe comes with trend labels, meta labels, and additional features
+    :param symbol: (str) symbol of the dollar bar
+    :param events: (dataframe) triple barrier events
     :param dollar_bars: (dataframe) with features and events
     :param type: (sklearn model) default as sequential bootstrapping SVC
     :param RANDOM_STATE: (int) random state seed, default as 42
     :return clf, model_metrics: (classifier, dataframe) classification model for the ticker, model metrics for train and test dataset on a dataframe
     """
-    # this symbol
-    symbol = dollar_bars.symbol.unique()[0]
 
     # train test split
-    _X = dollar_bars.iloc[:, :-1]
-    y = dollar_bars.iloc[:, -1]
-    col = ['index', 'tranx_date', 'symbol', 'open', 'close', 'high', 'low', 'vol', 'vwap', 'trade_count',
-           't1', 'target', 'ret'
-           ]
-    X = _X.drop(col, axis=1)
+    col = ['open', 'high', 'low', 'close', 'volume', 'bin']
+    dollar_bars = dollar_bars.dropna()
+    X = dollar_bars.drop(col, axis=1)
+    y = dollar_bars['bin']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False, random_state=RANDOM_STATE)
 
     # sample weights
-    events = dollar_bars[dollar_bars['isEvent']==1]
     return_based_sample_weights = get_weights_by_return(events.loc[X_train.index], dollar_bars.loc[X_train.index, 'close'])
     return_based_sample_weights_test = get_weights_by_return(events.loc[X_test.index], dollar_bars.loc[X_test.index, 'close'])
 
     # set hyperparameter params
-    parameters = {'C':[100, 1000],
+    parameters = {'max_depth':[3, 5, 7, 9],
+              'n_estimators':[25, 50, 100, 250],
+              'C':[100, 1000],
                 'gamma':[0.001, 0.0001], 
                 }
 
@@ -265,23 +276,27 @@ def modeling(dollar_bars, type='seq_boot_SVC', RANDOM_STATE = 42):
     model_metrics['performed_on'] = datetime.datetime.now()
 
     # perform testing and record score
-    y_pred = clf.predict(X_test)
+    clf = best_params['best_model']
+    t0 = time.time()
+    col = X_test.columns.to_list()
+    idx = X_test.index
+    X_test_scaled = StandardScaler().fit_transform(X_test)
+    X_test_scaled = pd.DataFrame(X_test_scaled, columns=col, index=idx)
+    y_pred = clf.predict(X_test_scaled)
+    t1 = time.time()
     test_results = {
-        'type':'seq_boot_SVC',
+        'type':type,
         'best_model':clf,
-        'best_cross_val_score':f1_score(np.array(y.iloc[y_test]), y_pred, sample_weight=return_based_sample_weights_test),
-        'recall': recall_score(np.array(y.iloc[y_test]), y_pred, sample_weight=return_based_sample_weights_test),
-        'precision':precision_score(np.array(y.iloc[y_test]), y_pred, sample_weight=return_based_sample_weights_test), 
-        'accuracy':accuracy_score(np.array(y.iloc[y_test]), y_pred, sample_weight=return_based_sample_weights_test),
-        'run_time':0,
+        'best_cross_val_score':f1_score(y_test, y_pred, sample_weight=return_based_sample_weights_test), #np.array(y.iloc[y_test])
+        'recall': recall_score(y_test, y_pred, sample_weight=return_based_sample_weights_test),
+        'precision':precision_score(y_test, y_pred, sample_weight=return_based_sample_weights_test), 
+        'accuracy':accuracy_score(y_test, y_pred, sample_weight=return_based_sample_weights_test),
+        'run_time':t1-t0,
         'train_test':'Test',
         'symbol':symbol,
         'performed_on':datetime.datetime.now()
     }
-    model_metrics.iloc[1] = test_results
-    
-    # final model with best params
-    clf = best_params['top_model'].squeeze()
+    model_metrics = model_metrics.append(test_results, ignore_index = True)
 
     return clf, model_metrics
 
@@ -301,7 +316,7 @@ def get_one_model(ticker, config=config.pgSecrets):
 
     # add features
     dollar_bars = trend_labeling(dollar_bars)
-    dollar_bars = meta_labeling(dollar_bars)
+    events, dollar_bars = meta_labeling(dollar_bars)
     dollar_bars = features_momentum(dollar_bars)
     dollar_bars = features_volatility(dollar_bars)
     dollar_bars = features_log_returns(dollar_bars)
@@ -317,9 +332,8 @@ def get_one_model(ticker, config=config.pgSecrets):
     # dollar_bars_COMP = bars.transform_index_based_on_dollarbar(dollar_bars, index_COMP)
     # dollar_bars = features_COMP_RS(dollar_bars, dollar_bars_COMP)
    
-
     # get the output model and train test metrics
-    clf, model_metrics = modeling(dollar_bars)
+    clf, model_metrics = modeling(ticker, events, dollar_bars)
 
     return clf, model_metrics
 

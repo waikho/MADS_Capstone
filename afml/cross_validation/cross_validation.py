@@ -6,7 +6,7 @@ from typing import Callable
 import pandas as pd
 import numpy as np
 
-from sklearn.metrics import log_loss, f1_score, recall_score, precision_score, accuracy_score
+from sklearn.metrics import log_loss, f1_score, recall_score, precision_score, accuracy_score, precision_recall_fscore_support
 from sklearn.model_selection import KFold
 from sklearn.base import ClassifierMixin
 from sklearn.model_selection import BaseCrossValidator
@@ -99,7 +99,6 @@ class PurgedKFold(KFold):
             yield np.array(train_indices), test_indices
 
 
-# noinspection PyPep8Naming
 def ml_cross_val_score(
         classifier: ClassifierMixin,
         X: pd.DataFrame,
@@ -107,8 +106,7 @@ def ml_cross_val_score(
         cv_gen: BaseCrossValidator,
         sample_weight: np.ndarray = None,
         scoring: Callable[[np.array, np.array], float] = log_loss):
-    # pylint: disable=invalid-name
-    # pylint: disable=comparison-with-callable
+
     """
     Snippet 7.4, page 110, Using the PurgedKFold Class.
     Function to run a cross-validation evaluation of the using sample weights and a custom CV generator.
@@ -147,8 +145,7 @@ def ml_cross_val_score(
     accuracy_scores=[]
     for train, test in cv_gen.split(X=X, y=y):
 
-        #kwargs = {classifier.steps[-1][0] + '__sample_weight': sample_weight}
-        #fit = classifier.fit(X=X.iloc[train, :], y=y.iloc[train], **kwargs)
+
         fit = classifier.fit(X=X.iloc[train, :], y=y.iloc[train], sample_weight=sample_weight[train])
         if scoring == log_loss:
             prob = fit.predict_proba(X.iloc[test, :])
@@ -156,6 +153,7 @@ def ml_cross_val_score(
             ret_scores.append(score)
         else:
             pred = fit.predict(X.iloc[test, :])
+            #precision, recall, f1_score, support = precision_recall_fscore_support(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
             score = f1_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
             recall = recall_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])
             precision = precision_score(np.array(y.iloc[test]), pred, sample_weight=sample_weight[test])

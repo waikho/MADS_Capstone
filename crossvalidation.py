@@ -16,11 +16,11 @@ def get_clf_best_param_cv(type, clf, X_train, y_train, cv_gen, scoring, sample_w
 
     best_param_dict = {}
     best_param_dict['type'] = type
-    best_param_dict['top_model'] = None
-    best_param_dict['max_cross_val_score'] = -np.inf
-    best_param_dict['max_cross_val_score_recall'] = -np.inf
-    best_param_dict['max_cross_val_score_precision'] = -np.inf
-    best_param_dict['max_cross_val_score_accuracy'] = -np.inf
+    best_param_dict['best_model'] = None
+    best_param_dict['best_cross_val_score'] = -np.inf
+    best_param_dict['recall'] = -np.inf
+    best_param_dict['precision'] = -np.inf
+    best_param_dict['accuracy'] = -np.inf
     best_param_dict['run_time'] = 0.0
 
     col = X_train.columns.to_list()
@@ -33,12 +33,12 @@ def get_clf_best_param_cv(type, clf, X_train, y_train, cv_gen, scoring, sample_w
     temp_score_base, temp_recall, temp_precision, temp_accuracy = ml_cross_val_score(clf, X_train_scaled, y_train, cv_gen, scoring=scoring, sample_weight=sample_weight)
     t1 = time.time()
     
-    if temp_score_base.mean() > best_param_dict['max_cross_val_score']:
-        best_param_dict['top_model'] = clf
-        best_param_dict['max_cross_val_score'] = temp_score_base.mean()
-        best_param_dict['max_cross_val_score_recall'] = temp_recall.mean()
-        best_param_dict['max_cross_val_score_precision'] = temp_precision.mean()
-        best_param_dict['max_cross_val_score_accuracy'] = temp_accuracy.mean()
+    if temp_score_base.mean() > best_param_dict['best_cross_val_score']:
+        best_param_dict['best_model'] = clf
+        best_param_dict['best_cross_val_score'] = temp_score_base.mean()
+        best_param_dict['recall'] = temp_recall.mean()
+        best_param_dict['precision'] = temp_precision.mean()
+        best_param_dict['accuracy'] = temp_accuracy.mean()
         best_param_dict['run_time'] = t1-t0    
     
     return best_param_dict
@@ -48,7 +48,7 @@ def perform_grid_search(X_train, y_train, cv_gen, scoring, parameters, events, d
     Grid search using Purged CV without using sample weights in fit(). Returns top model and top score
     """
 
-    if type=='SVC' or type=='seq_boot_SVC':
+    if type=='SVC' or type=='sequential_bootstrapping_SVC':
         for C in parameters['C']:
             for gamma in parameters['gamma']:
 
@@ -60,7 +60,7 @@ def perform_grid_search(X_train, y_train, cv_gen, scoring, parameters, events, d
 
                 if type =='SVC':
                     clf = clf_SVC
-                elif type == 'seq_boot_SVC':
+                elif type == 'sequential_bootstrapping_SVC':
                     clf = SequentiallyBootstrappedBaggingClassifier(samples_info_sets=events.loc[X_train.index].t1, ## events
                                                                 price_bars = dollar_bars.loc[X_train.index.min():X_train.index.max(), 'close'], ## df
                                                                 estimator=clf_SVC, 
@@ -77,7 +77,7 @@ def perform_grid_search(X_train, y_train, cv_gen, scoring, parameters, events, d
                 clf_base = DecisionTreeClassifier(criterion='entropy', random_state=RANDOM_STATE, 
                                                 max_depth=m_depth, class_weight='balanced')
 
-                if type == 'standard_bagging':
+                if type == 'standard_bagging_decision_tree':
                     clf = BaggingClassifier(n_estimators=n_est, 
                                             estimator=clf_base, 
                                             random_state=RANDOM_STATE, n_jobs=-1, 
@@ -91,7 +91,7 @@ def perform_grid_search(X_train, y_train, cv_gen, scoring, parameters, events, d
                                                 criterion='entropy',
                                                 class_weight='balanced_subsample', 
                                                 max_features=1.)
-                elif type == 'sequential_bootstrapping':
+                elif type == 'sequential_bootstrapping_decision_tree':
                     clf = SequentiallyBootstrappedBaggingClassifier(samples_info_sets=events.loc[X_train.index].t1, ## events
                                                                     price_bars = dollar_bars.loc[X_train.index.min():X_train.index.max(), 'close'], ## df
                                                                     estimator=clf_base, 
@@ -100,7 +100,6 @@ def perform_grid_search(X_train, y_train, cv_gen, scoring, parameters, events, d
                                                                     n_jobs=-1, 
                                                                     oob_score=False,
                                                                     max_features=1.)
-                
                 # get best param dict   
                 best_param_dict = get_clf_best_param_cv(type, clf, X_train, y_train, cv_gen, scoring=scoring, sample_weight=sample_weight)
 

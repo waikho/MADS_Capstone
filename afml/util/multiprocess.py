@@ -189,7 +189,8 @@ def process_jobs(jobs, task=None, num_threads=24):
     # Process asynchronous output, report progress
     for i, out_ in enumerate(outputs, 1):
         out.append(out_)
-        report_progress(i, len(jobs), time0, task)
+        #supress for now
+        #report_progress(i, len(jobs), time0, task) 
 
     pool.close()
     pool.join()  # This is needed to prevent memory leaks

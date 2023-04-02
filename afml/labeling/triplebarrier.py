@@ -122,7 +122,7 @@ def get_events(close, t_events, pt_sl, target, min_ret, num_threads, vertical_ba
     #target = target.loc[t_events]
     common_index = target.index.intersection(t_events)
     if common_index.empty:
-        print('There is no common index betweentarget ans tevents.')
+        print('There is no common index between target and tevents.')
     else:
         target = target.loc[common_index]
     target = target[target > min_ret]  # min_ret

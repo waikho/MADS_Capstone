@@ -23,6 +23,11 @@ from afml.sampling.bootstrapping import seq_bootstrap, get_ind_matrix
 
 MAX_INT = np.iinfo(np.int32).max
 
+"""
+Source: https://mizarlabs.readthedocs.io/en/stable/mizarlabs.model.html#module-mizarlabs.model.sequentially_bootstrapped_bagging_classifier
+
+"""
+
 
 # pylint: disable=too-many-ancestors
 # pylint: disable=too-many-instance-attributes
