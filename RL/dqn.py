@@ -43,12 +43,18 @@ class DQN(nn.Module):   #PyTorch's Module class
         super(DQN, self).__init__()
         self.model = nn.Sequential(
             nn.Linear(input_size, 256),
-            nn.ReLU(),
-            nn.Dropout(0.25),
+            #nn.ReLU(),
+            nn.LeakyReLU(),        #try LeakyReLU
+            nn.Dropout(0.5),       #increased from 0.25
             nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Dropout(0.25),
-            nn.Linear(256, n_actions),
+            #nn.ReLU(),
+            nn.LeakyReLU(),        #try LeakyReLu
+            nn.Dropout(0.5),       #increased from 0.25
+            nn.Linear(256, 128),   # new layer
+            #nn.ReLU(),             # new activation function
+            nn.LeakyReLU(),        #try LeakyReLU
+            nn.Dropout(0.5),      # new dropout layer; increased from 0.25
+            nn.Linear(128, n_actions),
             #nn.Softmax(dim=1)
             nn.Sigmoid()
         )
@@ -64,18 +70,21 @@ class DQN(nn.Module):   #PyTorch's Module class
     def select_action(state, EPS_START, EPS_END, EPS_DECAY, steps_done, policy_net, n_actions, device):
         #global steps_done
         sample = random.random()
+
+        #0.05 + (0.9 - 0.05) * exp(-1 * steps_done/200)
         eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-            math.exp(-1. * steps_done / EPS_DECAY)   #decreasing from 1 to 0.36xxx
-        steps_done += 1
+            math.exp(-1. * steps_done / EPS_DECAY)
+        #steps_done += 1
         if sample > eps_threshold:   #epsilon-greedy: at first, more random less nn; gradually more nn less random
             with torch.no_grad():   #disable tracking of grad in autograd; reduce memory usage and speed up computations; no backprop
                 # t.max(1) will return largest column value of each row.
                 # second column on max result is index of where max element was
                 # found, so we pick action with the larger expected reward.
-                #print(policy_net(state)).max(1)
-                return policy_net(state).max(1)[1].view(1, 1)   #exploit
+                nn_count = 1
+                return policy_net(state).max(1)[1].view(1, 1), nn_count   #exploit
         else:
-            return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)   #explore, because random
+            nn_count = 0
+            return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long), nn_count   #explore, because random
         
 
     #optimize_model function
@@ -113,7 +122,7 @@ class DQN(nn.Module):   #PyTorch's Module class
         # This is merged based on the mask, such that we'll have either the expected
         # state value or 0 in case the state was final.
         next_state_values = torch.zeros(BATCH_SIZE, device=device)   #initialize next_state_values
-        next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()   #what target_net says
+        next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()   #what target_net says, based on next states only
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * GAMMA) + reward_batch   
         #Bellman equation: expected state_action values (from target network) * GAMMA + immediate reward should equal to

@@ -147,7 +147,7 @@ class StockTradingEnvironment(gym.Env):
             total_return = self._total_return
         )
 
-        return observation, step_reward, self._done, info
+        return observation, step_reward, self._done, info, step_return
         #return observation, step_reward, self._done
     
     
