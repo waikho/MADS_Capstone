@@ -59,7 +59,7 @@ def get_index(ticker_df, index_ticker='SPY'):
     return index_df
 
 
-def normalizing(ticker_df, dv_multiple=2):
+def normalizing(ticker_df, dv_multiple=5):
     """
     Perform preprocessing for one ticker 
 
@@ -96,7 +96,7 @@ def trend_labeling(dollar_bars, window_size_max=7):
 
     return dollar_bars
 
-def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=5, ptsl=[1.5,1], minRet=0.0):
+def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=20, ptsl=[1.5,1], minRet=0.0):
     """
     Perform meta-labeling for one ticker
 
