@@ -44,15 +44,21 @@ class DQN(nn.Module):   #PyTorch's Module class
         self.model = nn.Sequential(
             nn.Linear(input_size, 256),
             #nn.ReLU(),
-            nn.LeakyReLU(),        #try LeakyReLU
+            #nn.LeakyReLU(),        #try LeakyReLU
+            nn.Tanh(),   # use Hyperbolic Tangent activation function
+            #nn.ELU(),
             nn.Dropout(0.5),       #increased from 0.25
             nn.Linear(256, 256),
             #nn.ReLU(),
-            nn.LeakyReLU(),        #try LeakyReLu
+            #nn.LeakyReLU(),        #try LeakyReLu
+            nn.Tanh(),
+            #nn.ELU(),
             nn.Dropout(0.5),       #increased from 0.25
             nn.Linear(256, 128),   # new layer
             #nn.ReLU(),             # new activation function
-            nn.LeakyReLU(),        #try LeakyReLU
+            #nn.LeakyReLU(),        #try LeakyReLU
+            nn.Tanh(),   # use Hyperbolic Tangent activation function
+            #nn.ELU(),
             nn.Dropout(0.5),      # new dropout layer; increased from 0.25
             nn.Linear(128, n_actions),
             #nn.Softmax(dim=1)
@@ -131,7 +137,7 @@ class DQN(nn.Module):   #PyTorch's Module class
         # Compute Huber loss
         #criterion = nn.SmoothL1Loss()
         #criterion = nn.MSELoss()
-        criterion = nn.BCELoss()
+        criterion = nn.BCELoss(reduction='mean')
         #criterion = nn.L1Loss()
         loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
 
