@@ -119,33 +119,40 @@ def find_cointegrated_pairs(data):
             df = data[[keys[i], keys[j]]].dropna()
             S1 = df[keys[i]]
             S2 = df[keys[j]]
-            result = coint(S1, S2)    #statsmodel built-in cointegration hypothesis test
+            try: 
+                result = coint(S1, S2)    #statsmodel built-in cointegration hypothesis test; could divide by zero!
+            except:
+                result = [0, 0]           #if error, assume [0,0]
             score = result[0]
             pvalue = result[1]
             score_matrix[i, j] = score
             pvalue_matrix[i, j] = pvalue
 
-            #run OLS regression
-            ols_model=OLS(S1, S2).fit()
-            #get pair's hedge ratio
-            hr_pair = ols_model.params[0]
-            
-            #calculate spread
-            spread = np.log(S1) - hr_pair * np.log(S2)
-            #spread = S1 - hr_pair * S2   ###changed###
-
-            #adf
-            # conduct Augmented Dickey-Fuller test
-            adf = adfuller(spread, maxlag = 1)
-        
-            #if pvalue < 0.05 :    #reject null: there should be cointegration
-            #add one condition: adf needs to < -3.435 to confirm stationarity
-            if (pvalue < 0.05 and adf[0] < -3.435):    #reject null: there should be cointegration
-                pairs.append((keys[i], keys[j]))
+            try:
+                #run OLS regression
+                ols_model=OLS(S1, S2).fit()  #could divide by zero!
+                #get pair's hedge ratio
+                hr_pair = ols_model.params[0]
                 
-                #append hr_pair into hr list
-                hr.append(hr_pair)
-     
+                #calculate spread
+                spread = np.log(S1) - hr_pair * np.log(S2)
+                #spread = S1 - hr_pair * S2   ###changed###
+
+                #adf
+                # conduct Augmented Dickey-Fuller test
+                adf = adfuller(spread, maxlag = 1)
+            
+                #if pvalue < 0.05 :    #reject null: there should be cointegration
+                #add one condition: adf needs to < -3.435 to confirm stationarity
+                if (pvalue < 0.05 and adf[0] < -3.435):    #reject null: there should be cointegration
+                    pairs.append((keys[i], keys[j]))
+                    
+                    #append hr_pair into hr list
+                    hr.append(hr_pair)
+            
+            except:
+                pass
+
     return score_matrix, pvalue_matrix, hr, pairs
 
 

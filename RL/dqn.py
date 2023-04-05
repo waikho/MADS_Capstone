@@ -83,7 +83,7 @@ class DQN(nn.Module):   #PyTorch's Module class
     
 
     #select_action function
-    def select_action(state, EPS_START, EPS_END, EPS_DECAY, steps_done, policy_net, n_actions, device):
+    def select_action(self, state, EPS_START, EPS_END, EPS_DECAY, steps_done, policy_net, n_actions):
         #global steps_done
         sample = random.random()
 
@@ -100,11 +100,11 @@ class DQN(nn.Module):   #PyTorch's Module class
                 return policy_net(state).max(1)[1].view(1, 1), nn_count   #exploit
         else:
             nn_count = 0
-            return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long), nn_count   #explore, because random
+            return torch.tensor([[random.randrange(n_actions)]], device=self.device, dtype=torch.long), nn_count   #explore, because random
         
 
     #optimize_model function
-    def optimize_model(memory, BATCH_SIZE, device, policy_net, target_net, GAMMA, optimizer):
+    def optimize_model(self, memory, BATCH_SIZE, policy_net, target_net, GAMMA, optimizer):
         if len(memory) < BATCH_SIZE:   #min memory = 128
             return
         transitions = memory.sample(BATCH_SIZE)
@@ -118,7 +118,7 @@ class DQN(nn.Module):   #PyTorch's Module class
         # (a final state would've been the one after which simulation ended)
         #len(non_final_mask) = 128
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,   #lambda s: s is not None will return a tuple of bools over bench.next_state
-                                            batch.next_state)), device=device, dtype=torch.bool)   #next_state is an observation
+                                            batch.next_state)), device=self.device, dtype=torch.bool)   #next_state is an observation
         #each non_final_next_states has len = 62; one batch of non_final_next_states = 128; so 62 * 128 = 7936 elements in a batch
         non_final_next_states = torch.cat([s for s in batch.next_state
                                                     if s is not None])
@@ -137,7 +137,7 @@ class DQN(nn.Module):   #PyTorch's Module class
         # on the "older" target_net; selecting their best reward with max(1)[0].
         # This is merged based on the mask, such that we'll have either the expected
         # state value or 0 in case the state was final.
-        next_state_values = torch.zeros(BATCH_SIZE, device=device)   #initialize next_state_values
+        next_state_values = torch.zeros(BATCH_SIZE, device=self.device)   #initialize next_state_values
         next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()   #what target_net says, based on next states only
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * GAMMA) + reward_batch   
