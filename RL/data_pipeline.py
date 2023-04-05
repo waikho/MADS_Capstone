@@ -208,3 +208,18 @@ def cointHeatmap(df):
     return pairs, pvalues, sampled_df
 
 
+#find pairs, pvalues, sampled_df without plotting heatmap
+def find_pairs_pv_df(df):
+
+    # Randomly sample 50 columns
+    num_cols_to_sample = min(50, len(df.columns)) # sample up to 50 columns or all columns if there are fewer than 50
+    
+    if len(df) > 50:
+        sampled_df = df.sample(n=num_cols_to_sample, axis=1)
+    else:
+        sampled_df = df
+    
+    tickers = sampled_df.columns
+    scores, pvalues, hr, pairs = find_cointegrated_pairs(sampled_df)
+    
+    return pairs, pvalues, sampled_df

@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
+#import torch.nn.init as init
 
 import gym
 import math
@@ -43,27 +44,36 @@ class DQN(nn.Module):   #PyTorch's Module class
         super(DQN, self).__init__()
         self.model = nn.Sequential(
             nn.Linear(input_size, 256),
+            #nn.InstanceNorm1d(256),  # instance normalization layer
             #nn.ReLU(),
-            #nn.LeakyReLU(),        #try LeakyReLU
-            nn.Tanh(),   # use Hyperbolic Tangent activation function
+            nn.LeakyReLU(),        #try LeakyReLU
+            #nn.Tanh(),   # use Hyperbolic Tangent activation function
             #nn.ELU(),
             nn.Dropout(0.5),       #increased from 0.25
             nn.Linear(256, 256),
+            #nn.InstanceNorm1d(256),  # instance normalization layer
             #nn.ReLU(),
-            #nn.LeakyReLU(),        #try LeakyReLu
-            nn.Tanh(),
+            nn.LeakyReLU(),        #try LeakyReLu
+            #nn.Tanh(),
             #nn.ELU(),
             nn.Dropout(0.5),       #increased from 0.25
             nn.Linear(256, 128),   # new layer
+            #nn.InstanceNorm1d(128),  # instance normalization layer
             #nn.ReLU(),             # new activation function
-            #nn.LeakyReLU(),        #try LeakyReLU
-            nn.Tanh(),   # use Hyperbolic Tangent activation function
+            nn.LeakyReLU(),        #try LeakyReLU
+            #nn.Tanh(),   # use Hyperbolic Tangent activation function
             #nn.ELU(),
             nn.Dropout(0.5),      # new dropout layer; increased from 0.25
             nn.Linear(128, n_actions),
             #nn.Softmax(dim=1)
             nn.Sigmoid()
         )
+        
+        # # He initialization for linear layers
+        # for m in self.modules():
+        #     if isinstance(m, nn.Linear):
+        #         init.kaiming_normal_(m.weight.data)
+        
         self.device = device
 
     # Called with either one element to determine next action, or a batch
