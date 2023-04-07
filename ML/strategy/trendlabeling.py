@@ -73,7 +73,6 @@ def get_trend_scanning_labels(time_series, window_size_max, threshold=0, side='b
 
     # rolling window on time series
     for i in range(window_size_max, len(time_series)+1):
-    #for i in range(len(time_series)-window_size_max+1):
         # define window of data
         this_y = (time_series[i-window_size_max:i])
         this_one_best_slope = get_one_best_slope(this_y, window_size_max=window_size_max)
@@ -82,39 +81,3 @@ def get_trend_scanning_labels(time_series, window_size_max, threshold=0, side='b
     
 
     return d
-
-
-
-# import getdata as gd
-# df = gd.get_yf_data(tickers= "SPY AAPL ALGM DNOW", period='1y', interval='1d')
-# df = df[df['Ticker'] == 'ALGM']
-
-# # convert Adj Close to numpy
-# time_series = df['Adj Close'].to_numpy()
-
-# # define window size
-# window_size_max = 7
-
-# #define threshold 
-# threshold = 0.0
-
-# opp_sign_ct=2
-
-# # get trend scanning labels
-# label_output = get_trend_scanning_labels(time_series=time_series, window_size_max=window_size_max, threshold=threshold)
-
-# # opp_sign_ct = 2
-# # # a = np.array([1,1,-1,-2,3,-4,5])
-# # # asign = np.sign(a)
-# # # signchange = ((np.roll(asign, 1) - asign) != 0).astype(int)
-# # # signchange
-
-# # lst = np.array([1,1,-1,-1,3,-4,5])
-# # i = 2
-# # arr = np.sign(lst[i])
-
-# # np.all(arr == arr[0])
-# # lst[i]
-
-lst = [0,1,2]
-lst[0:0]
