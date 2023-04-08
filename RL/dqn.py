@@ -57,14 +57,14 @@ class DQN(nn.Module):   #PyTorch's Module class
             #nn.Tanh(),
             #nn.ELU(),
             nn.Dropout(0.5),       #increased from 0.25
-            nn.Linear(256, 128),   # new layer
+            nn.Linear(256, 256),   # new layer; try 256 -> 256
             #nn.InstanceNorm1d(128),  # instance normalization layer
             #nn.ReLU(),             # new activation function
             nn.LeakyReLU(),        #try LeakyReLU
             #nn.Tanh(),   # use Hyperbolic Tangent activation function
             #nn.ELU(),
             nn.Dropout(0.5),      # new dropout layer; increased from 0.25
-            nn.Linear(128, n_actions),
+            nn.Linear(256, n_actions),   #try 256 neurons
             #nn.Softmax(dim=1)
             nn.Sigmoid()
         )

@@ -196,13 +196,13 @@ def plotStockClusters(clusters):
 
 
 #plot cointegration heatmap
-def cointHeatmap(df):
+def cointHeatmap(df, random_state):
 
     # Randomly sample 50 columns
     num_cols_to_sample = min(50, len(df.columns)) # sample up to 50 columns or all columns if there are fewer than 50
     
     if len(df) > 50:
-        sampled_df = df.sample(n=num_cols_to_sample, axis=1)
+        sampled_df = df.sample(n=num_cols_to_sample, axis=1, random_state=random_state)
     else:
         sampled_df = df
     
@@ -212,6 +212,10 @@ def cointHeatmap(df):
     fig, ax = plt.subplots(figsize=(10,10))
     seaborn.heatmap(pvalues, xticklabels=tickers, yticklabels=tickers, cmap='RdYlGn_r', mask=(pvalues >= 0.05))
     print(pairs)
+
+    plt.ioff()
+    plt.show()
+
     return pairs, pvalues, sampled_df
 
 

@@ -27,11 +27,11 @@ class StockTradingEnvironment(gym.Env):
     """A stock trading environment for OpenAI gym"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, data, window_size, trade_period, trans_cost):
+    def __init__(self, data, window_size, trans_cost):
         super().__init__()
 
         self.window_size = window_size
-        self.trade_period = trade_period
+        #self.trade_period = trade_period
         self.trans_cost = trans_cost
         
         self.trade(data)
