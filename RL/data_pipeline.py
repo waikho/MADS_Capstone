@@ -210,7 +210,7 @@ def cointHeatmap(df, random_state):
     scores, pvalues, hr, pairs = find_cointegrated_pairs(sampled_df)
     
     fig, ax = plt.subplots(figsize=(10,10))
-    seaborn.heatmap(pvalues, xticklabels=tickers, yticklabels=tickers, cmap='RdYlGn_r', mask=(pvalues >= 0.05))
+    seaborn.heatmap(pvalues, xticklabels=tickers, yticklabels=tickers, cmap='RdYlGn', mask=(pvalues >= 0.05))
     print(pairs)
 
     plt.ioff()

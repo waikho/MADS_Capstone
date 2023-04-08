@@ -104,6 +104,7 @@ class DQN(nn.Module):   #PyTorch's Module class
         
 
     #optimize_model function
+    #added l2 regularization term by CGPT
     def optimize_model(self, memory, BATCH_SIZE, policy_net, target_net, GAMMA, optimizer):
         if len(memory) < BATCH_SIZE:   #min memory = 128
             return
