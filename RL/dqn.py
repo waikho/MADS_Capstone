@@ -142,7 +142,7 @@ class DQN(nn.Module):   #PyTorch's Module class
         next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()   #what target_net says, based on next states only
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * GAMMA) + reward_batch   
-        #Bellman equation: expected state_action values (from target network) * GAMMA + immediate reward should equal to
+        #Bellman equation: next state_action values (from target network) * GAMMA + immediate reward should equal to
         #state_action values returned by policy network; difference = loss
 
         # Compute Huber loss
