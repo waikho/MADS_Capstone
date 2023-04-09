@@ -393,21 +393,21 @@ def modeling(symbol, events, dollar_bars, type='sequential_bootstrapping_SVC', t
     X_train_scaled = StandardScaler().fit_transform(X_train)
     X_train_scaled = pd.DataFrame(X_test_scaled, columns=col, index=idx)    
     
-    # perform KS test on model drift
-    isDrifted = 0
-    ks_stat, p_value = ks_2samp(X_train_scaled.values.flatten(), X_test_scaled.values.flatten())
-    alpha = 0.05 #threshold for p-value
-    if p_value < alpha:
-        isDrifted = 1
+    # # perform KS test on model drift
+    # isDrifted = 0
+    # ks_stat, p_value = ks_2samp(X_train_scaled.values, X_test_scaled.values)
+    # alpha = 0.05 #threshold for p-value
+    # if p_value < alpha:
+    #     isDrifted = 1
 
     # table to record down training results
 
     model_metrics = model_metrics.append(best_params, ignore_index = True)  
     model_metrics['train_test'] = 'Train'
     model_metrics['symbol'] = symbol
-    model_metrics['isDrifted'] = isDrifted
-    model_metrics['ks_stat'] = ks_stat
-    model_metrics['ks_p_value'] = p_value
+    # model_metrics['isDrifted'] = isDrifted
+    # model_metrics['ks_stat'] = ks_stat
+    # model_metrics['ks_p_value'] = p_value
     model_metrics['cum_rtn'] = 0.0
     model_metrics['annualized_rtn'] = 0.0
     model_metrics['sharpe_ratio'] = 0.0
@@ -434,9 +434,9 @@ def modeling(symbol, events, dollar_bars, type='sequential_bootstrapping_SVC', t
         'run_time':t1-t0,
         'train_test':'Test',
         'symbol':symbol,
-        'isDrifted':isDrifted,
-        'ks_stat':ks_stat,
-        'ks_p_value':p_value,
+        # 'isDrifted':isDrifted,
+        # 'ks_stat':ks_stat,
+        # 'ks_p_value':p_value,
         'cum_rtn': bt_metrics['cum_rtn'],
         'annualized_rtn': bt_metrics['annualized_rtn'], 
         'sharpe_ratio':bt_metrics['sharpe_ratio'],
@@ -448,7 +448,7 @@ def modeling(symbol, events, dollar_bars, type='sequential_bootstrapping_SVC', t
 
     return clf, model_metrics
 
-def get_one_model(ticker, method='trend_labeling', config=config.pgSecrets):
+def get_one_model(ticker, type='sequential_bootstrapping_SVC', method='trend_labeling', config=config.pgSecrets):
 
     """
     get the meta-labelled model for one ticker
@@ -492,7 +492,7 @@ def get_one_model(ticker, method='trend_labeling', config=config.pgSecrets):
     # dollar_bars = features_COMP_RS(dollar_bars, dollar_bars_COMP)
    
     # get the output model and train test metrics
-    clf, model_metrics = modeling(ticker, events, dollar_bars)
+    clf, model_metrics = modeling(ticker, events, dollar_bars, type=type)
     model_metrics['rawdata_st_date'] = ticker_df.index.min()
     model_metrics['rawdata_en_date'] = ticker_df.index.max()
     model_metrics['SPY_st_date'] = index_SPY.index.min()
@@ -501,7 +501,7 @@ def get_one_model(ticker, method='trend_labeling', config=config.pgSecrets):
 
     return clf, model_metrics
 
-def get_multiple_models(ticker_lst, method='trend_labeling', config=config.pgSecrets):
+def get_multiple_models(ticker_lst, type='sequential_bootstrapping_SVC', method='trend_labeling', config=config.pgSecrets):
     """
     :param ticker_lst: (list) of ticker symbols
 
@@ -514,7 +514,7 @@ def get_multiple_models(ticker_lst, method='trend_labeling', config=config.pgSec
 
     for i, ticker in enumerate(ticker_lst):
         print('Processing {}/{} {}...'.format(str(i+1), ln, ticker))
-        clf, model_metrics = get_one_model(ticker, method=method, config=config)
+        clf, model_metrics = get_one_model(ticker, type=type, method=method, config=config)
         clfs[ticker] = clf
         model_metrics_df = pd.concat([model_metrics_df, model_metrics], ignore_index=True)
         print('Modeling completed {}/{} {}'.format(str(i+1), ln, ticker))

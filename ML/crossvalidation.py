@@ -34,6 +34,7 @@ def get_clf_best_param_cv(type, clf, X_train, y_train, cv_gen, scoring, sample_w
     t1 = time.time()
     
     if temp_score_base.mean() > best_param_dict['best_cross_val_score']:
+    #if temp_recall.mean() > best_param_dict['recall']:
         best_param_dict['best_model'] = clf
         best_param_dict['best_cross_val_score'] = temp_score_base.mean()
         best_param_dict['recall'] = temp_recall.mean()
