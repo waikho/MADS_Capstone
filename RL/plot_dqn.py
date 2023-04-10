@@ -62,7 +62,7 @@ def plot_episodes(data_dict):
     cumsum = df.cumsum()
     
     #get the index of the column with the highest cumulative sum
-    highest_cumulative_sum = cumsum.sum().idxmax()
+    highest_cumulative_sum = cumsum.iloc[-1,:].idxmax()
 
     #print("Column with highest cumulative sum:", highest_cumulative_sum)
 
@@ -108,7 +108,7 @@ def plot_n_episodes(data_dict, start_ep, end_ep):
     plt.show()
 
     # get the index of the column with the highest cumulative sum
-    highest_cumulative_sum = cumsum.sum().idxmax()
+    highest_cumulative_sum = cumsum.iloc[-1,:].idxmax()
 
     #print("Column with highest cumulative sum:", highest_cumulative_sum)
     print(f'Highest cumulative return in epoch {highest_cumulative_sum}, return: {cumsum.iloc[-1][highest_cumulative_sum]}.')
