@@ -74,13 +74,14 @@ def normalizing(ticker_df, dv_multiple=5):
     """
         
     # generate dollar bars
-    dv_thres = (ticker_df['vol']*ticker_df['close']).resample('D').sum()[:-10].mean()*dv_multiple # average of the dollar value from the last 10 days * 2
+    dv_thres = (ticker_df['vol']*ticker_df['close']).resample('D').sum().mean()*dv_multiple # average of the dollar value from the last 10 days * 2
+    #dv_thres = (ticker_df['vol']*ticker_df['close']).resample('D').sum()[:-10].mean()*dv_multiple # average of the dollar value from the last 10 days * 2
     dollar_bars = bars.generate_dollarbars(ticker_df, dv_thres=dv_thres) 
 
     return dollar_bars
 
 
-def trend_labeling(dollar_bars, window_size_max=7):
+def trend_labeling(dollar_bars, window_size_max=5):
     """
     Perform trend_labeling for one ticker
     :param dollar_bars: (dataframe) processed dollar bars

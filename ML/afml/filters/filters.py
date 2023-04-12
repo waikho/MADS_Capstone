@@ -30,8 +30,6 @@ def cusum_filter(raw_time_series, threshold, signal=None, time_stamps=True):
     """
 
     t_events = []
-    t_events_pos = []
-    t_events_neg = []
     s_pos = 0
     s_neg = 0
 
@@ -62,24 +60,15 @@ def cusum_filter(raw_time_series, threshold, signal=None, time_stamps=True):
         if s_neg < -thresh:
             s_neg = 0
             t_events.append(tup.Index)
-            t_events_pos.append(tup.Index)
 
         elif s_pos > thresh:
             s_pos = 0
-            t_events.append(tup.Index)
-            t_events_neg.append(tup.Index)       
+            t_events.append(tup.Index)   
 
     # Return DatetimeIndex or list
     if time_stamps:
         t_events = pd.DatetimeIndex(t_events)
-        t_events_pos = pd.DatetimeIndex(t_events_pos)
-        t_events_neg = pd.DatetimeIndex(t_events_neg)
-    
-    if signal == 'buy':
-        return t_events_pos
-    elif signal == 'sell':
-        return t_events_neg
-    else:
+
         return t_events
 
 def getTEvents(gRaw, h):

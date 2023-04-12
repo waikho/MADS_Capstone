@@ -44,7 +44,7 @@ def get_clf_best_param_cv(type, clf, X_train, y_train, cv_gen, scoring, sample_w
     
     return best_param_dict
 
-def perform_grid_search(X_train, y_train, cv_gen, scoring, parameters, events, dollar_bars, type='standard', sample_weight=None, RANDOM_STATE=42):
+def perform_grid_search(X_train, y_train, cv_gen, scoring, parameters, events, dollar_bars, type='sequential_bootstrapping_SVC', sample_weight=None, RANDOM_STATE=42):
     """
     Grid search using Purged CV without using sample weights in fit(). Returns top model and top score
     """
