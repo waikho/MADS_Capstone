@@ -5,6 +5,8 @@ pgSecrets = {
     'dbname' : 'capstone'
 }
 
+
+
 def pgDictToConn(secretDict):
     pgStrs = []
     for key in secretDict:
