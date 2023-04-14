@@ -1,5 +1,10 @@
 """
-Implements the book chapter 7 on Cross Validation for financial data.
+References & Credits: 
+Methodology referenced to Lopez Marco de Prado's book Advanced in Financial Machine Learning.
+Codes referenced to a depreciated repo on https://github.com/mnewls/MLFINLAB For latest development, refer to https://github.com/hudson-and-thames/mlfinlab
+The method description, code layout, and naming convention referenced from Hudson-and-Thames's mlfinlab: https://github.com/hudson-and-thames/mlfinlab
+
+Some parts of the code has been modified to by compatible with Python 3
 """
 
 from typing import Callable
@@ -16,11 +21,9 @@ def ml_get_train_times(samples_info_sets: pd.Series, test_times: pd.Series) -> p
     # pylint: disable=invalid-name
     """
     Snippet 7.1, page 106,  Purging observations in the training set
-
     This function find the training set indexes given the information on which each record is based
     and the range for the test set.
     Given test_times, find the times of the training observations.
-
     :param samples_info_sets: The information range on which each record is constructed from
         *samples_info_sets.index*: Time when the information extraction started.
         *samples_info_sets.value*: Time when the information extraction ended.
@@ -40,7 +43,6 @@ class PurgedKFold(KFold):
     Extend KFold class to work with labels that span intervals
     The train is purged of observations overlapping test-label intervals
     Test set is assumed contiguous (shuffle=False), w/o training samples in between
-
     :param n_splits: The number of splits. Default to 3
     :param samples_info_sets: The information range on which each record is constructed from
         *samples_info_sets.index*: Time when the information extraction started.
@@ -67,7 +69,6 @@ class PurgedKFold(KFold):
               groups=None):
         """
         The main method to call for the PurgedKFold class
-
         :param X: The pd.DataFrame samples dataset that is to be split
         :param y: The pd.Series sample labels series
         :param groups: array-like, with shape (n_samples,), optional
@@ -109,21 +110,15 @@ def ml_cross_val_score(
     """
     Snippet 7.4, page 110, Using the PurgedKFold Class.
     Function to run a cross-validation evaluation of the using sample weights and a custom CV generator.
-
     Note: This function is different to the book in that it requires the user to pass through a CV object. The book
     will accept a None value as a default and then resort to using PurgedCV, this also meant that extra arguments had to
     be passed to the function. To correct this we have removed the default and require the user to pass a CV object to
     the function.
-
     Updated to include f1, recall and precision if log+loss is not the scoring method
-
     Example:
-
     .. code-block:: python
-
         cv_gen = PurgedKFold(n_splits=n_splits, samples_info_sets=samples_info_sets, pct_embargo=pct_embargo)
         scores_array = ml_cross_val_score(classifier, X, y, cv_gen, sample_weight=None, scoring=accuracy_score)
-
     :param classifier: A sk-learn Classifier object instance.
     :param X: The dataset of records to evaluate.
     :param y: The labels corresponding to the X dataset.

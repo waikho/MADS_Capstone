@@ -1,6 +1,12 @@
+
+"""
+References & Credits: 
+Unless otherwise stated, these codes below are snippets from Lopez Marco de Prado's book Advanced in Financial Machine Learning
+The method description, code layout, and naming convention referenced from Hudson-and-Thames's mlfinlab: https://github.com/hudson-and-thames/mlfinlab
+
+"""
+
 import pandas as pd
-
-
 
 def getDailyVol(close, span=100):
     # daily vol, reindexed to close 

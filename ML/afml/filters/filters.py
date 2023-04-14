@@ -1,10 +1,19 @@
+"""
+References & Credits: 
+Methodology referenced to Lopez Marco de Prado's book Advanced in Financial Machine Learning.
+Codes referenced to a depreciated repo on https://github.com/mnewls/MLFINLAB For latest development, refer to https://github.com/hudson-and-thames/mlfinlab
+The method description, code layout, and naming convention referenced from Hudson-and-Thames's mlfinlab: https://github.com/hudson-and-thames/mlfinlab
+
+Some parts of the code has been modified to by compatible with Python 3
+"""
+
 import numpy as np
 import pandas as pd
 
 import tqdm
 
 # Snippet 2.4, page 39, The Symmetric CUSUM Filter.
-def cusum_filter(raw_time_series, threshold, signal=None, time_stamps=True):
+def cusum_filter(raw_time_series, threshold, time_stamps=True):
     """
     Snippet 2.4, page 39, The Symmetric Dynamic/Fixed CUSUM Filter.
     The CUSUM filter is a quality-control method, designed to detect a shift in the
@@ -18,8 +27,6 @@ def cusum_filter(raw_time_series, threshold, signal=None, time_stamps=True):
     Once we have obtained this subset of event-driven bars, we will let the ML algorithm determine
     whether the occurrence of such events constitutes actionable intelligence.
     Below is an implementation of the Symmetric CUSUM filter.
-    Note: As per the book this filter is applied to closing prices but we extended it to also work on other
-    time series such as volatility.
 
     :param raw_time_series: (series) of close prices (or other time series, e.g. volatility).
     :param threshold: (float or pd.Series) when the abs(change) is larger than the threshold, the function captures
@@ -29,9 +36,7 @@ def cusum_filter(raw_time_series, threshold, signal=None, time_stamps=True):
     :return: (datetime index vector) vector of datetimes when the events occurred. This is used later to sample.
     """
 
-    t_events = []
-    s_pos = 0
-    s_neg = 0
+    t_events,s_pos,s_neg = [],0,0
 
     # log returns
     raw_time_series = pd.DataFrame(raw_time_series)  # Convert to DataFrame
@@ -39,7 +44,6 @@ def cusum_filter(raw_time_series, threshold, signal=None, time_stamps=True):
     raw_time_series['log_ret'] = raw_time_series.price.apply(np.log).diff() #difference in log of price 
 
     # check if threshold is a single value or a pd series
-    # make it as a new column
     if isinstance(threshold, (float, int)):
         raw_time_series['threshold'] = threshold
     elif isinstance(threshold, pd.Series):
@@ -71,22 +75,5 @@ def cusum_filter(raw_time_series, threshold, signal=None, time_stamps=True):
 
         return t_events
 
-def getTEvents(gRaw, h):
-    """
-    Original function by Lopez 
-    Snippet 2.4
-    if the abs price change is greater than the threshold, it captures as an event 
-    """
-    tEvents, sPos, sNeg = [], 0, 0
-    diff = gRaw.diff()
 
-    for i in diff.index[1:]:
-        sPos, sNeg = max(0, sPos+diff.loc[i]), min(0, sNeg+diff.loc[i])
-        if sNeg < -h:
-            sNeg=0
-            tEvents.append(i)
-        elif sPos > h:
-            sPos=0
-            tEvents.append(i)
-    return pd.DatetimeIndex(tEvents)
 

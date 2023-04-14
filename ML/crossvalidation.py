@@ -1,3 +1,9 @@
+"""
+
+Perform grid serach/ hyperparameter tuning for selected models.
+"""
+
+
 import time
 import pandas as pd
 import numpy as np
@@ -17,7 +23,7 @@ def get_clf_best_param_cv(type, clf, X_train, y_train, cv_gen, scoring, sample_w
     best_param_dict = {}
     best_param_dict['type'] = type
     best_param_dict['best_model'] = None
-    best_param_dict['best_cross_val_score'] = -np.inf
+    best_param_dict['f1'] = -np.inf
     best_param_dict['recall'] = -np.inf
     best_param_dict['precision'] = -np.inf
     best_param_dict['accuracy'] = -np.inf
@@ -33,10 +39,9 @@ def get_clf_best_param_cv(type, clf, X_train, y_train, cv_gen, scoring, sample_w
     temp_score_base, temp_recall, temp_precision, temp_accuracy = ml_cross_val_score(clf, X_train_scaled, y_train, cv_gen, scoring=scoring, sample_weight=sample_weight)
     t1 = time.time()
     
-    if temp_score_base.mean() > best_param_dict['best_cross_val_score']:
-    #if temp_recall.mean() > best_param_dict['recall']:
+    if temp_score_base.mean() > best_param_dict['f1']:
         best_param_dict['best_model'] = clf
-        best_param_dict['best_cross_val_score'] = temp_score_base.mean()
+        best_param_dict['f1'] = temp_score_base.mean()
         best_param_dict['recall'] = temp_recall.mean()
         best_param_dict['precision'] = temp_precision.mean()
         best_param_dict['accuracy'] = temp_accuracy.mean()

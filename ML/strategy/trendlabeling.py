@@ -1,6 +1,11 @@
 from sklearn.linear_model import LinearRegression
 import numpy as np
 
+"""
+Referenced to: Prof. Marco Lopez de Prado Cornell University ORIE 5256 https://ssrn.com/abstract=3257419 
+
+
+"""
 
 def get_one_slope(window_size, this_y): 
     """
@@ -58,6 +63,7 @@ def get_one_best_slope(this_y, window_size_max):
 def get_trend_scanning_labels(time_series, window_size_max, threshold=0, side='both'):
     """
     get trend scanning labels on entire time series
+    Reference: https://ssrn.com/abstract=3257419 
 
     :param time_series: numpy list of prices
     :param window_size_max: window size to use to calculate most signifcant slope

@@ -85,21 +85,18 @@ def plot_model_metrics(model_metrics, add_msg='between Modeling methods', show_t
         plt.show()
 
 def plot_model_metrics_grid(model_metrics, add_msg='', show_train_test_mean=False):
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(12, 8), sharey=True)
+    mets = len(model_metrics.columns)
+    nrows = mets//3 if mets%3 == 0 else (mets//3)+1
+    fig, axs = plt.subplots(nrows=nrows, ncols=3, figsize=(12, nrows*3), sharey=True)
     metrics = model_metrics.columns
     for i, metric in enumerate(metrics):
-        if i < 2:
-            ax = axs[i//3, i%3]
-        else:
-            ax = axs[1, 2]
-            ax.set_facecolor('white')
+        ax = axs[i%3] if nrows == 1 else axs[i//3, i%3]
         model_metrics[metric].plot(kind='barh', rot=0, fontsize=9, color='orange', ax=ax)
         for patch in ax.patches:
             width = patch.get_width()
             height = patch.get_height()
             x, y = patch.get_xy()
             ax.annotate(f'{width:.2f}', (x + width + 0.001, y + height/2), ha='left', va='center')
-
         if show_train_test_mean == True:
             metric_means = model_metrics.groupby('train_test').mean()
             mean_train = metric_means.loc['Train', metric]

@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 
 import config
-import psycopg
-from psycopg.rows import dict_row
 import getdata as gd
 import platform, os
 import datetime
@@ -23,10 +21,8 @@ from afml.cross_validation.cross_validation import PurgedKFold
 import crossvalidation as cv
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
-
-from scipy.stats import ks_2samp
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -75,7 +71,6 @@ def normalizing(ticker_df, dv_multiple=5):
         
     # generate dollar bars
     dv_thres = (ticker_df['vol']*ticker_df['close']).resample('D').sum().mean()*dv_multiple # average of the dollar value from the last 10 days * 2
-    #dv_thres = (ticker_df['vol']*ticker_df['close']).resample('D').sum()[:-10].mean()*dv_multiple # average of the dollar value from the last 10 days * 2
     dollar_bars = bars.generate_dollarbars(ticker_df, dv_thres=dv_thres) 
 
     return dollar_bars
@@ -116,13 +111,13 @@ def ma_crossover_labeling(dollar_bars, exp=True):
 
     return dollar_bars
 
-def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=20, ptsl=[1.5,1], minRet=0.0):
+def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=20, ptsl=[1,1], minRet=0.0):
     """
     Perform meta-labeling for one ticker
 
     :param dollar_bars: (dataframe) processed dollar bars
     :param span: (int) the of rolling days to determine rolling volatility, default as 50 days
-    :param filter_multiple: (float) multiple applied to the average volatility to determine threshold for cusum event filter, default as 0.5
+    :param filter_multiple: (float) multiple applied to the average volatility to determine threshold for cusum event filter, default as 1.0
     :param num_days: (int) vertical barrier of triple barrier labeling i.e. number of days before position is closed, default is 5 days
     :param ptsl: (list(int, int)) defines profit to loss ratio for the horizontal barriers in triple barrier labeling method, default is [1.5, 1]
     :param minRet: (float) defines the minimum % return to capture the event as a tradable event, default is 0.015 where 0.01 is \
@@ -136,7 +131,7 @@ def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=20, ptsl=[
     dailyVolatility = vol.getDailyVol(close, span=span)
 
     # Identify events as cumulative log return that passes dailyVolitility threshold
-    tEvents = flt.cusum_filter(close, threshold=dailyVolatility.mean()*filter_multiple)
+    tEvents = flt.cusum_filter(close, dailyVolatility.mean()*filter_multiple)
 
     # define vertical barrier - subjective judgment
     t1 = tbar.add_vertical_barrier(tEvents, close, num_days=num_days)
@@ -339,7 +334,7 @@ def modeling(symbol, events, dollar_bars, type='sequential_bootstrapping_SVC', t
     :return clf, model_metrics: (classifier, dataframe) classification model for the ticker, model metrics for train and test dataset on a dataframe
     """
     # df to store results
-    model_metrics = pd.DataFrame(columns = ['type', 'best_model', 'best_cross_val_score', 'recall', 'precision', 'accuracy','run_time'])
+    model_metrics = pd.DataFrame(columns = ['type', 'best_model', 'f1', 'recall', 'precision', 'accuracy','run_time'])
 
     # train test split
     col = ['open', 'high', 'low', 'close', 'volume', 'bin']
@@ -365,10 +360,10 @@ def modeling(symbol, events, dollar_bars, type='sequential_bootstrapping_SVC', t
 
     # set hyperparameter params
     parameters = {'max_depth':[3, 5, 7, 9],
-              'n_estimators':[25, 50, 100, 250],
-              'C':[4000, 6000, 8000],
-                'gamma':[0.0001, 0.00001], 
-                }
+                  'n_estimators':[25, 50, 100, 250],
+                  'C':[4000, 6000, 8000],
+                  'gamma':[0.0001, 0.00001], 
+                  }
 
     # set KFold splits
     n_splits=4
@@ -393,22 +388,13 @@ def modeling(symbol, events, dollar_bars, type='sequential_bootstrapping_SVC', t
     idx = X_test.index
     X_train_scaled = StandardScaler().fit_transform(X_train)
     X_train_scaled = pd.DataFrame(X_test_scaled, columns=col, index=idx)    
-    
-    # # perform KS test on model drift
-    # isDrifted = 0
-    # ks_stat, p_value = ks_2samp(X_train_scaled.values, X_test_scaled.values)
-    # alpha = 0.05 #threshold for p-value
-    # if p_value < alpha:
-    #     isDrifted = 1
+
 
     # table to record down training results
 
     model_metrics = model_metrics.append(best_params, ignore_index = True)  
     model_metrics['train_test'] = 'Train'
     model_metrics['symbol'] = symbol
-    # model_metrics['isDrifted'] = isDrifted
-    # model_metrics['ks_stat'] = ks_stat
-    # model_metrics['ks_p_value'] = p_value
     model_metrics['cum_rtn'] = 0.0
     model_metrics['annualized_rtn'] = 0.0
     model_metrics['sharpe_ratio'] = 0.0
@@ -428,16 +414,13 @@ def modeling(symbol, events, dollar_bars, type='sequential_bootstrapping_SVC', t
     test_results = {
         'type':type,
         'best_model':clf,
-        'best_cross_val_score':f1_score(y_test, y_pred, sample_weight=return_based_sample_weights_test),
+        'f1':f1_score(y_test, y_pred, sample_weight=return_based_sample_weights_test),
         'recall': recall_score(y_test, y_pred, sample_weight=return_based_sample_weights_test),
         'precision':precision_score(y_test, y_pred, sample_weight=return_based_sample_weights_test), 
         'accuracy':accuracy_score(y_test, y_pred, sample_weight=return_based_sample_weights_test),
         'run_time':t1-t0,
         'train_test':'Test',
         'symbol':symbol,
-        # 'isDrifted':isDrifted,
-        # 'ks_stat':ks_stat,
-        # 'ks_p_value':p_value,
         'cum_rtn': bt_metrics['cum_rtn'],
         'annualized_rtn': bt_metrics['annualized_rtn'], 
         'sharpe_ratio':bt_metrics['sharpe_ratio'],
@@ -486,11 +469,6 @@ def get_one_model(ticker, type='sequential_bootstrapping_SVC', method='trend_lab
     # add features - relative strength to SPY
     dollar_bars_SPY = bars.transform_index_based_on_dollarbar(dollar_bars, index_SPY)
     dollar_bars = features_SPY_RS(dollar_bars, dollar_bars_SPY)
-
-    # # add features - relative strength to COMP
-    # index_COMP = get_index(ticker_df, 'COMP')
-    # dollar_bars_COMP = bars.transform_index_based_on_dollarbar(dollar_bars, index_COMP)
-    # dollar_bars = features_COMP_RS(dollar_bars, dollar_bars_COMP)
    
     # get the output model and train test metrics
     clf, model_metrics = modeling(ticker, events, dollar_bars, type=type)
