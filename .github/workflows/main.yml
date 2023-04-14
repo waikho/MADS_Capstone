@@ -1,0 +1,25 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout files to docker
+        uses: actions/checkout@v3
+      - name: install ssh keys
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.TENCENT_SSH_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H 43.138.250.245 > ~/.ssh/known_hosts
+      - name: sync files
+        run: |
+          #ls -la
+          rsync -avz --exclude '.git*' ./ ubuntu@43.138.250.245:/home/ubuntu/capstone/
+          #ssh ubuntu@43.138.250.245 "command here"
+      - name: cleanup
+        run: rm -rf ~/.ssh
