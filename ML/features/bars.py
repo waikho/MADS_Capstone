@@ -9,7 +9,7 @@ def generate_dollarbars(ticker_df, dv_thres=1000):
     """
     # expects a numpy array with trades
     # each trade is composed of: [time, price, quantity]
-    https://towardsdatascience.com/advanced-candlesticks-for-machine-learning-ii-volume-and-dollar-bars-6cda27e3201d
+    Reference: https://towardsdatascience.com/advanced-candlesticks-for-machine-learning-ii-volume-and-dollar-bars-6cda27e3201d
     """
 
     times = ticker_df['tranx_date']

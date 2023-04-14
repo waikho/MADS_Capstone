@@ -1,6 +1,15 @@
 """
 Logic regarding return and time decay attribution for sample weights from chapter 4.
 """
+"""
+References & Credits: 
+Methodology referenced to Lopez Marco de Prado's book Advanced in Financial Machine Learning.
+Codes referenced to a depreciated repo on https://github.com/mnewls/MLFINLAB For latest development, refer to https://github.com/hudson-and-thames/mlfinlab
+The method description, code layout, and naming convention referenced from Hudson-and-Thames's mlfinlab: https://github.com/hudson-and-thames/mlfinlab
+
+Some parts of the code has been modified to by compatible with Python 3
+"""
+
 
 import numpy as np
 import pandas as pd
