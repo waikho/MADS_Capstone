@@ -22,13 +22,6 @@ from pubproxpy import Level, Protocol, ProxyFetcher
 from termcolor import colored
 
 
-
-
-
-
-
-
-
 #All global variables
 newYorkTz = pytz.timezone("America/New_York") 
 
@@ -170,9 +163,9 @@ def threadedGetMinuteDataForMultipleStocks(symbols, date_from, date_to, job_id=1
                 try:
                     updateSingleStockMinuteEntriesToDB(symbol, data)
                     success = True
-                    print(colored('Completed minute update for symbol {}'.format(symbol), 'orange'))
+                    print('Completed minute update for symbol {}'.format(symbol), 'green'))
                 except Exception as e:
-                    print(str(e), 'retry DB for minute update job {}'.format(job_id))
+                    print(str(e), 'retry DB for minute update job {} for symbol {}'.format(job_id, symbol))
                     print('Wait for {} seconds'.format(delay))
                     systime.sleep(delay) 
                     delay = delay * 2
@@ -193,7 +186,7 @@ def threadedGetMinuteDataForMultipleStocks(symbols, date_from, date_to, job_id=1
 
         t1.join()
         t2.join()
-        print(colored('Completed minute update job id {}'.format(job_id), 'orange'))
+        print(colored('Completed minute update job id {}'.format(job_id), 'green'))
 
 
 #Related to daily data
@@ -296,7 +289,7 @@ def threadedGetDailyDataForMultipleStocks(symbols, date_from, date_to, job_id=1,
                 try:
                     updateStockDailyEntriesToDB(symbol, data)
                     success = True
-                    print(colored('Completed for symbol {}'.format(symbol), 'orange'))
+                    print(colored('Completed for symbol {}'.format(symbol), 'green'))
                 except Exception as e:
                     print(str(e), 'retry DB for job {}'.format(job_id))
                     print('Wait for {} seconds'.format(delay))
@@ -319,7 +312,7 @@ def threadedGetDailyDataForMultipleStocks(symbols, date_from, date_to, job_id=1,
 
         t1.join()
         t2.join()
-        print(colored('Completed job id {}'.format(job_id), 'orange'))
+        print(colored('Completed job id {}'.format(job_id), 'green'))
 
 
 #Related to stock info
