@@ -1,5 +1,7 @@
 # README FOR CAPASTONE PROJECT BY KCT CAPITAL
 
+## Introduction
+
 ### Folder structure
 
     .
@@ -9,3 +11,7 @@
     ├── sample                  # Sample configuration files or sample scripts to help understand the main application or 
     ├── LICENSE
     └── README.md
+
+## Setup
+
+## Usage
