@@ -394,7 +394,7 @@ def batchScrapInfoForStocks(symbols, fields, proxyRefreshRate=config.api['pubpro
                         proxies = getNewProxy()
                         print('New Proxy: {}'.format(proxies))
                     else:
-                        time.sleep(delay)
+                        systime.sleep(delay)
                         print('Wait for {}s before retrying for {}'.format(delay, symbol))
                         delay = delay * 2
                 
