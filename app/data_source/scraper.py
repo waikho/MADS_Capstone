@@ -479,7 +479,7 @@ def getStockInfoTickerList():
         with conn.cursor(row_factory=dict_row) as cur:
             stmt = '''SELECT DISTINCT symbol
                 FROM alpaca_minute
-                WHERE AM.symbol NOT IN (SELECT symbol FROM stock_info_ignore_list)
+                WHERE symbol NOT IN (SELECT symbol FROM stock_info_ignore_list)
                 ORDER BY symbol'''
             result = cur.execute(stmt).fetchall()
             conn.commit()

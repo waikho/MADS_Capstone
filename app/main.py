@@ -41,6 +41,7 @@ else:
     # helpers.emailNotification(notification_recipients, 
     #                           "KCT Capital - Daily Minute Data Pipeline", 
     #                           "Daily Minute Data for {} is ready".format(today))
+    
     #Stock Information
     scraper.stockInfoUpdate(stockFieldsToExtract)
     helpers.emailNotification(notification_recipients,
