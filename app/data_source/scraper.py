@@ -2,7 +2,9 @@
 import alpaca
 import alpaca.trading
 import config
+import json
 import numpy as np
+import requests
 import psycopg
 import pytz
 import random
@@ -11,10 +13,21 @@ import time as systime
 from alpaca.data import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
+from bs4 import BeautifulSoup
 from datetime import datetime, time, timedelta
+from html.parser import HTMLParser
 from psycopg.rows import dict_row
 from psycopg.types.json import Json
+from pubproxpy import Level, Protocol, ProxyFetcher
 from termcolor import colored
+
+
+
+
+
+
+
+
 
 #All global variables
 newYorkTz = pytz.timezone("America/New_York") 
@@ -203,7 +216,9 @@ def getSelectedSymbolsFor10Years():
                         ELSE (info::json->>'Shs Float')::DECIMAL
                     END AS float
                     FROM stock_info
-                    WHERE info::json->>'Shs Float' <> '-') AS SI
+                    WHERE info::json->>'Shs Float' <> '-'
+                    AND last_update = ANY(
+                    SELECT MAX(last_update) FROM stock_info)) AS SI
                 WHERE AM.symbol = LT.symbol AND LT.symbol = SI.symbol AND AM.datetime = LT.latest
                 AND AM.close >= 10.0 AND AM.close <= 30.0
                 AND SI.float <= 60000000'''
@@ -231,7 +246,7 @@ def getDayLevelDataForStock(symbol, date_from, date_to):
     return data
 
 def updateStockDailyEntriesToDB(symbol, entries):
-    with psycopg.connect(pgConnStr) as conn:
+    with psycopg.connect(config.pgConnStr) as conn:
         with conn.cursor() as cur:
             tmp_table = 'tmp_daily_{}'.format(symbol.replace('.','_'))
             stmt = '''CREATE TEMP TABLE {} 
@@ -305,3 +320,180 @@ def threadedGetDailyDataForMultipleStocks(symbols, date_from, date_to, job_id=1,
         t1.join()
         t2.join()
         print(colored('Completed job id {}'.format(job_id), 'orange'))
+
+
+#Related to stock info
+def getNewProxy():
+    while True:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36',
+        }
+        params = {
+            'api': config.api['pubproxy']['key'],
+            'level': 'elite',
+        }
+        result = requests.get('http://pubproxy.com/api/proxy', params=params,  headers=headers).json()
+        if "data" in result:
+            proxyString = result['data'][0]['type'] + '://' + result['data'][0]['ipPort']
+            proxies = {'http': proxyString}
+            return proxies
+        else:
+            time.sleep(2)
+            continue
+
+def getStockInfoPage(symbol, proxies):
+    url = "https://finviz.com/quote.ashx?t={}&ty=c&p=d&b=1".format(symbol)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'
+    }
+    response = requests.get(url,
+                          proxies=proxies,
+                          headers=headers)
+    response.raise_for_status()
+    return response.content
+
+def ParseFieldsFromInfoPage(pageHTML, fields):
+    soup = BeautifulSoup(pageHTML)
+    table = soup.find("table", {"class": "snapshot-table2"})
+    cells = table.find_all('td')
+    infoDict = dict.fromkeys(fields)
+    for cell in cells:
+        if cell.string in fields:
+            infoDict[cell.string] = cell.next_sibling.string
+    return infoDict
+
+def ScrapInfoForStock(symbol, fields, proxies):
+    htmlResult = getStockInfoPage(symbol, proxies)
+    return ParseFieldsFromInfoPage(htmlResult, fields)
+
+def batchScrapInfoForStocks(symbols, fields, proxyRefreshRate=config.api['pubproxy']['refresh_rate']):
+    count = 0
+    all_info = {}
+    failed_symbols = []
+    proxies = None
+    delay = 0
+    for symbol in symbols:
+        delay = random.randint(30, 60)
+        if count % proxyRefreshRate == 0:
+            try:
+                proxies = getNewProxy()
+                print('New Proxy: {}'.format(proxies))
+            except:
+                print('Get New Proxy Failed. Use Previous Proxy')
+        success = False
+        while not success:
+            try:
+                info = ScrapInfoForStock(symbol, fields, proxies)
+                all_info[symbol] = info
+                success = True
+                print('Got info for symbol {}'.format(symbol))
+            except Exception as e:
+                if str(e)[:3] == '404':
+                    failed_symbols.append(symbol)
+                    success = True
+                    print('Symbol Error for {}, skipped'.format(symbol))
+                else:
+                    print('Failed to get info for symbol {}'.format(symbol))
+                    if delay >= 900:   
+                        delay = random.randint(60, 120)
+                        proxies = getNewProxy()
+                        print('New Proxy: {}'.format(proxies))
+                    else:
+                        time.sleep(delay)
+                        print('Wait for {}s before retrying for {}'.format(delay, symbol))
+                        delay = delay * 2
+                
+        count = count + 1
+        time.sleep(random.randint(2, 7))
+    return all_info, failed_symbols
+
+
+
+def ThreadedScrapInfoForStocks(symbols, fields, info={}, failed_list=[], job_id=1,  
+                               proxyRefreshRate=config.api['pubproxy']['refresh_rate'], thread_size=180):
+    if(len(symbols) <= thread_size):
+        new_info, new_failed_list = batchScrapInfoForStocks(symbols, fields, proxyRefreshRate=proxyRefreshRate)
+        info.update(new_info)
+        failed_list.extend(new_failed_list)
+        print(colored('Completed for job id {}'.format(job_id), 'red'))
+    else:
+        split_point = int(len(symbols)/2)
+        sym1 = symbols[:split_point]
+        sym2 = symbols[split_point:]
+        list1 = []
+        list2 = []
+        info1 = {}
+        info2 = {}
+        t1 = threading.Thread(target=ThreadedScrapInfoForStocks, name='t{}'.format(job_id*2), args=(sym1, fields, info1, list1, job_id*2))
+        t2 = threading.Thread(target=ThreadedScrapInfoForStocks, name='t{}'.format(job_id*2+1), args=(sym2, fields, info2, list2, job_id*2+1))
+        t1.start()
+        delay = thread_size
+        time.sleep(delay)
+        t2.start()
+        t1.join()
+        t2.join()
+        info.update(info1)
+        info.update(info2)
+        failed_list.extend(list1)
+        failed_list.extend(list2)
+
+def updateStockInfoToDB(entries):
+    with psycopg.connect(config.pgConnStr) as conn:
+        with conn.cursor() as cur:
+            stmt = '''CREATE TEMP TABLE temp_stock_info
+                (LIKE stock_info INCLUDING DEFAULTS)
+                ON COMMIT DROP'''
+            cur.execute(stmt)
+
+            with cur.copy('''COPY temp_stock_info (symbol, info)
+                FROM STDIN''') as copy:
+                for symbol, info_dict in entries.items(): 
+                    entry_tuple = (symbol, json.dumps(info_dict))
+                    copy.write_row(entry_tuple)
+
+            stmt = '''INSERT INTO stock_info (symbol, info, last_update)
+                SELECT symbol, info, last_update
+                FROM temp_stock_info
+                ON CONFLICT(symbol, last_update) DO NOTHING'''
+            cur.execute(stmt)
+            conn.commit()    
+
+def updateIgnoreListToDB(ignore_list):
+    with psycopg.connect(config.pgConnStr) as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            for symbol in ignore_list:
+                stmt = '''INSERT INTO stock_info_ignore_list(symbol) VALUES(%s)
+                ON CONFLICT DO NOTHING'''
+                data = (symbol,)
+                cur.execute(stmt, data)
+            conn.commit()
+
+def getStockInfo():
+    with psycopg.connect(config.pgConnStr) as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            stmt = '''SELECT symbol, info FROM stock_info
+                WHERE last_update = ANY(
+                    SELECT MAX(last_update) FROM stock_info)
+                ORDER BY symbol'''
+            result = cur.execute(stmt).fetchall()
+            conn.commit()
+    return result
+
+def getStockInfoTickerList():
+    with psycopg.connect(config.pgConnStr) as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            stmt = '''SELECT DISTINCT symbol
+                FROM alpaca_minute
+                WHERE AM.symbol NOT IN (SELECT symbol FROM stock_info_ignore_list)
+                ORDER BY symbol'''
+            result = cur.execute(stmt).fetchall()
+            conn.commit()
+            return [row['symbol'] for row in result]
+        
+def stockInfoUpdate(fields):
+    symbols = getStockInfoTickerList()
+    info = {}
+    failed_list = []
+    ThreadedScrapInfoForStocks(symbols, fields, info, failed_list)
+    updateStockInfoToDB(info)
+    updateIgnoreListToDB(failed_list)
