@@ -2,8 +2,10 @@ config.py
 *.code-workspace
 **/.ipynb_checkpoints/
 **/__pycache__/
-test.ipynb
+**/archive/
 
+
+test.ipynb
 ML/test.py
 ML/artifacts/GLP_20230403181624.csv
 ML/artifacts/model_metrics_demo_20230403174252.csv

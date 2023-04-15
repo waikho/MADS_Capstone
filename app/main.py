@@ -1,18 +1,18 @@
 #All imports
+import config
 import pytz
+import helpers
 from datetime import datetime, date, time, timedelta
 from dateutil.relativedelta import relativedelta
 from data_source import scraper
 
-#Constants
-EXCHANGE_OPEN_HOUR = 9
-EXCHANGE_OPEN_MIN = 30
-EXCHANGE_CLOSE_HOUR = 16
-EXCHANGE_CLOSE_MIN = 0
+
 newYorkTz = pytz.timezone("America/New_York") 
 
 #Intial Variables
+notification_recipients = ["horris@umich.edu", "choichao@umich.edu", "wkho@umich.edu"]
 selected_exchanges = ['AssetExchange.NASDAQ', 'AssetExchange.NYSE', 'AssetExchange.ARCA']
+benchmarks = ['COMP', 'SPY']
 weekends = [6, 7]
 
 #Main function
@@ -20,7 +20,7 @@ weekends = [6, 7]
 #Calculate Date Ranges and Adjust for Time Zone
 today = date.today()
 now = datetime.now(newYorkTz)
-last_close = datetime.combine(date.today(), time(hour=EXCHANGE_CLOSE_HOUR, minute=EXCHANGE_CLOSE_MIN, tzinfo=newYorkTz))
+last_close = datetime.combine(date.today(), time(hour=config.EXCHANGE_CLOSE_HOUR, minute=config.EXCHANGE_CLOSE_MIN, tzinfo=newYorkTz))
 
 if last_close > now:
     last_close = last_close - timedelta(1)
@@ -35,4 +35,11 @@ else:
     symbols = scraper.getAllActiveSymbols(selected_exchanges)
     #Minute Level Data at Daily Frequency
     scraper.threadedGetMinuteDataForMultipleStocks(symbols, today, today)
+    helpers.emailNotification(notification_recipients, 
+                              "KCT Capital - Daily Minute Data Pipeline", 
+                              "Daily Minute Data for {} is ready".format(today))
+    #Stock Information
+
+    #10 Year Daily Data of Selected Stocks
+    selected_symbols = scraper.getSelectedSymbolsFor10Years() + benchmarks
     
