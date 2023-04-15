@@ -1,0 +1,10 @@
+alpaca==1.0.0
+beautifulsoup4==4.11.2
+numpy==1.21.2
+psycopg==3.1.4
+pubproxpy==2.0.2
+python_dateutil==2.8.2
+pytz==2022.7.1
+Requests==2.28.2
+sendgrid==6.10.0
+termcolor==2.2.0
