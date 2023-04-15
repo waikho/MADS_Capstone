@@ -37,10 +37,10 @@ if dow in weekends:
 else:
     symbols = scraper.getAllActiveSymbols(selected_exchanges)
     #Minute Level Data at Daily Frequency
-    scraper.threadedGetMinuteDataForMultipleStocks(symbols, today, today)
-    helpers.emailNotification(notification_recipients, 
-                              "KCT Capital - Daily Minute Data Pipeline", 
-                              "Daily Minute Data for {} is ready".format(today))
+    # scraper.threadedGetMinuteDataForMultipleStocks(symbols, today, today)
+    # helpers.emailNotification(notification_recipients, 
+    #                           "KCT Capital - Daily Minute Data Pipeline", 
+    #                           "Daily Minute Data for {} is ready".format(today))
     #Stock Information
     scraper.stockInfoUpdate(stockFieldsToExtract)
     helpers.emailNotification(notification_recipients,

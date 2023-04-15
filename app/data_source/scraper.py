@@ -200,7 +200,7 @@ def getSelectedSymbolsFor10Years():
                 GROUP BY symbol 
                 '''
             cur.execute(stmt)
-            stmt = '''SELECT AM.symbol FROM alpaca_minute AS AM, last_tranx AS LT,
+            stmt = '''WITH SI AS 
                 (SELECT symbol,
                     CASE RIGHT(info::json->>'Shs Float', 1) 
                         WHEN 'K' THEN 1000 * LEFT(info::json->>'Shs Float', -1)::DECIMAL
@@ -210,11 +210,13 @@ def getSelectedSymbolsFor10Years():
                     END AS float
                     FROM stock_info
                     WHERE info::json->>'Shs Float' <> '-'
-                    AND last_update = ANY(
-                    SELECT MAX(last_update) FROM stock_info)) AS SI
-                WHERE AM.symbol = LT.symbol AND LT.symbol = SI.symbol AND AM.datetime = LT.latest
-                AND AM.close >= 10.0 AND AM.close <= 30.0
-                AND SI.float <= 60000000'''
+                    AND last_update = ANY(SELECT MAX(last_update) FROM stock_info)
+                )
+                SELECT AM.symbol FROM alpaca_minute AS AM, last_tranx AS LT, SI
+                    
+                    WHERE AM.symbol = LT.symbol AND LT.symbol = SI.symbol AND AM.datetime = LT.latest
+                    AND AM.close >= 10.0 AND AM.close <= 30.0
+                    AND SI.float <= 60000000'''
             result = cur.execute(stmt).fetchall()
             conn.commit()
             return [row['symbol'] for row in result]
