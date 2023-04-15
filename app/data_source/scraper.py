@@ -333,7 +333,7 @@ def getNewProxy():
             proxies = {'http': proxyString}
             return proxies
         else:
-            time.sleep(2)
+            systime.sleep(2)
             continue
 
 def getStockInfoPage(symbol, proxies):
@@ -348,7 +348,7 @@ def getStockInfoPage(symbol, proxies):
     return response.content
 
 def ParseFieldsFromInfoPage(pageHTML, fields):
-    soup = BeautifulSoup(pageHTML)
+    soup = BeautifulSoup(pageHTML, features="html.parser")
     table = soup.find("table", {"class": "snapshot-table2"})
     cells = table.find_all('td')
     infoDict = dict.fromkeys(fields)
@@ -399,7 +399,7 @@ def batchScrapInfoForStocks(symbols, fields, proxyRefreshRate=config.api['pubpro
                         delay = delay * 2
                 
         count = count + 1
-        time.sleep(random.randint(2, 7))
+        systime.sleep(random.randint(2, 7))
     return all_info, failed_symbols
 
 
@@ -423,7 +423,7 @@ def ThreadedScrapInfoForStocks(symbols, fields, info={}, failed_list=[], job_id=
         t2 = threading.Thread(target=ThreadedScrapInfoForStocks, name='t{}'.format(job_id*2+1), args=(sym2, fields, info2, list2, job_id*2+1))
         t1.start()
         delay = thread_size
-        time.sleep(delay)
+        systime.sleep(delay)
         t2.start()
         t1.join()
         t2.join()
