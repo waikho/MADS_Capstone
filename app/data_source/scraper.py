@@ -163,7 +163,7 @@ def threadedGetMinuteDataForMultipleStocks(symbols, date_from, date_to, job_id=1
                 try:
                     updateSingleStockMinuteEntriesToDB(symbol, data)
                     success = True
-                    print('Completed minute update for symbol {}'.format(symbol), 'green'))
+                    print(colored('Completed minute update for symbol {}'.format(symbol), 'green'))
                 except Exception as e:
                     print(str(e), 'retry DB for minute update job {} for symbol {}'.format(job_id, symbol))
                     print('Wait for {} seconds'.format(delay))
