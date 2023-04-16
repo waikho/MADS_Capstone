@@ -32,7 +32,6 @@ def pgDictToConn(secretDict):
 
 #get daily prices
 def getDailyPrices(symbol_lst, pgConnStr):
-    #df = pd.DataFrame()
     dfs = []
 
     with psycopg.connect(pgConnStr) as conn:
@@ -45,7 +44,6 @@ def getDailyPrices(symbol_lst, pgConnStr):
                 ticker_df = pd.DataFrame(rows, columns=['tranx_date',symbol])
                 #ticker_df.drop_duplicates(subset=['tranx_date']).set_index('tranx_date')   ###alpaca data may have duplicate prices for the same datetime###
                 #df = pd.concat([df, ticker_df[symbol]], axis=1)
-                #below are suggested by CGPT
                 ticker_df.drop_duplicates(subset=['tranx_date'], inplace=True)
                 ticker_df.set_index('tranx_date', inplace=True)
                 dfs.append(ticker_df)
@@ -66,7 +64,6 @@ def getDailyPrices(symbol_lst, pgConnStr):
                 combined_df = combined_df.reindex(idx, method='bfill')
                 
     return combined_df
-    #return df
     
 
 #get distinct tickers from daily prices
@@ -186,9 +183,7 @@ def plotStockClusters(clusters):
         y = clusters.loc[clusters['cluster'] == cluster, 'y']
         symbol = clusters.loc[clusters['cluster'] == cluster, 'symbol']
         ax.scatter(x, y, label=f"Cluster {cluster}", color=cmap(i))
-        #for j, sym in enumerate(symbol):
-        #    ax.annotate(sym, (x.iloc[j], y.iloc[j]))
-
+        
     ax.set_xlabel('PCA 1')
     ax.set_ylabel('PCA 2')
     ax.legend()

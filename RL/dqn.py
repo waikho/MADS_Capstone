@@ -1,3 +1,6 @@
+#Code credit: https://github.com/jeffreyyu0602/ZheShang/tree/0cebb2ec90a5921d06a4d117e9202cca1ae511fc
+#With modifications
+
 from collections import namedtuple, deque
 
 import torch
@@ -5,7 +8,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
-#import torch.nn.init as init
 
 import gym
 import math
@@ -76,8 +78,6 @@ class DQN(nn.Module):   #PyTorch's Module class
         
         self.device = device
 
-    # Called with either one element to determine next action, or a batch
-    # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
         return self.model(x.to(self.device))
     
@@ -93,9 +93,9 @@ class DQN(nn.Module):   #PyTorch's Module class
         #steps_done += 1
         if sample > eps_threshold:   #epsilon-greedy: at first, more random less nn; gradually more nn less random
             with torch.no_grad():   #disable tracking of grad in autograd; reduce memory usage and speed up computations; no backprop
-                # t.max(1) will return largest column value of each row.
-                # second column on max result is index of where max element was
-                # found, so we pick action with the larger expected reward.
+                #t.max(1) = largest column value of each row.
+                #second column on max result = index of where max element was found
+                #pick action with the larger expected reward.
                 nn_count = 1
                 return policy_net(state).max(1)[1].view(1, 1), nn_count   #exploit
         else:
@@ -104,19 +104,15 @@ class DQN(nn.Module):   #PyTorch's Module class
         
 
     #optimize_model function
-    #added l2 regularization term by CGPT
     def optimize_model(self, memory, BATCH_SIZE, policy_net, target_net, GAMMA, optimizer):
         if len(memory) < BATCH_SIZE:   #min memory = 128
             return
         transitions = memory.sample(BATCH_SIZE)
         
-        # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
-        # detailed explanation). This converts batch-array of Transitions
-        # to Transition of batch-arrays.
+        #Transpose the batch
         #each batch has 4 elements: 62*128, 1*128, 62*128, 1*128: memory.push(state, action, next_state, reward)
         batch = Transition(*zip(*transitions))   #batch is a namedtuple; tuple (state, action, next_state, reward) from memory
-        # Compute a mask of non-final states and concatenate the batch elements
-        # (a final state would've been the one after which simulation ended)
+        #mask of non-final states and concatenate the batch elements
         #len(non_final_mask) = 128
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,   #lambda s: s is not None will return a tuple of bools over bench.next_state
                                             batch.next_state)), device=self.device, dtype=torch.bool)   #next_state is an observation
@@ -127,32 +123,25 @@ class DQN(nn.Module):   #PyTorch's Module class
         action_batch = torch.cat(batch.action)   #128
         reward_batch = torch.cat(batch.reward)   #128
 
-        # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
-        # columns of actions taken. These are the actions which would've been taken
-        # for each batch state according to policy_net
         #Q(s_t, a) is what the policy_net says based on state_batch
         state_action_values = policy_net(state_batch).gather(1, action_batch)   #gather from policy_net(state_batch) (axis, index)
 
-        # Compute V(s_{t+1}) for all next states.
-        # Expected values of actions for non_final_next_states are computed based
-        # on the "older" target_net; selecting their best reward with max(1)[0].
-        # This is merged based on the mask, such that we'll have either the expected
-        # state value or 0 in case the state was final.
+        #Compute V(s_{t+1}) for all next states.
         next_state_values = torch.zeros(BATCH_SIZE, device=self.device)   #initialize next_state_values
         next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()   #what target_net says, based on next states only
-        # Compute the expected Q values
+        #Compute the expected Q values
         expected_state_action_values = (next_state_values * GAMMA) + reward_batch   
         #Bellman equation: next state_action values (from target network) * GAMMA + immediate reward should equal to
         #state_action values returned by policy network; difference = loss
 
-        # Compute Huber loss
+        #BCELoss best for binary classification
         #criterion = nn.SmoothL1Loss()
         #criterion = nn.MSELoss()
         criterion = nn.BCELoss(reduction='mean')
         #criterion = nn.L1Loss()
         loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
 
-        # Optimize the model
+        #Optimize the model
         optimizer.zero_grad()   #set optimizer's grad to zero
         loss.backward()
         for param in policy_net.parameters():
