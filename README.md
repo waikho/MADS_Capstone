@@ -23,7 +23,10 @@ In long run, we aim to build a fully automated trading bot that can generate con
     └── README.md
 
 ## Setup
+Before running the machine learning models, the data collection pipeline has to be set up to enable daily automatic update of stock data. Please follow the steps below. It is assumed that you have set up a Virtual Machine running Ubuntu v20 or above.
+
 ### 1. Install Postgres Server
+The 
 ### 2. Setup Postgres Schema
 ### 3. Register Alpaca Account
 ### 4. Register PubProxy Account
@@ -31,6 +34,21 @@ In long run, we aim to build a fully automated trading bot that can generate con
 ### 6. Create config.py
 ### 7. Install required modules
 ### 8. Setup crontab
+Run the following command to set up daily scheduled job for the pipeline.
+'''
+crontab -u YOUR_USER_NAME -e
+'''
+
+In the editor, type the following and edit according to your time zone to set up a schedule job to run after stock market closing. The example below assumes Asia/Hong Kong time zone so it runs at 5am every day to start getting the latest stock market data.
+
+'''
+0 5 * * * /PATH_TO_YOUR_HOME/capstone/start.sh
+'''
+
+You may use the tool at https://crontab.guru/ to help getting the correct crontab expression.
 
 
 ## Usage
+### 1. Meta-Labeling & the Triple Barrier Method
+### 2. Reinforcement Learning
+
