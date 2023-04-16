@@ -32,7 +32,20 @@ The
 ### 4. Register PubProxy Account
 ### 5. Setup Remote SSH key for CI/CD (Optional)
 ### 6. Create config.py
+Copy sample/config-sample.py to app/config.py and update all actual crendtials acquired from the previous steps.
+
 ### 7. Install required modules
+Run
+```
+pip install -r requirements.txt
+```
+or
+```
+pip3 install -r requirements.txt
+```
+to install all required python modules.
+
+
 ### 8. Setup crontab
 Run the following command to set up daily scheduled job for the pipeline.
 ```
