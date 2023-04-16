@@ -30,6 +30,8 @@ The
 ### 2. Setup Postgres Schema
 ### 3. Register Alpaca Account
 ### 4. Register PubProxy Account
+Visit http://pubproxy.com/ and create an API key for free. Free API usage is limited and of lower priority. You may wish to upgrade to premium API for unlimited proxy requests to ensure smooth data download.
+
 ### 5. Setup Remote SSH key for CI/CD (Optional)
 ### 6. Create config.py
 Copy sample/config-sample.py to app/config.py and update all actual crendtials acquired from the previous steps.
