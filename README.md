@@ -29,6 +29,9 @@ Before running the machine learning models, the data collection pipeline has to 
 The 
 ### 2. Setup Postgres Schema
 ### 3. Register Alpaca Account
+Register an account at https://app.alpaca.markets/signup. Only paper trading account is required to run this repository and acquire non-realtime data. Once an account is created, you can visit https://app.alpaca.markets/paper/dashboard/overview and choose "View API Keys" at the right hand side of the screen to obtain your API key.
+
+
 ### 4. Register PubProxy Account
 Visit http://pubproxy.com/ and create an API key for free. Free API usage is limited and of lower priority. You may wish to upgrade to premium API for unlimited proxy requests to ensure smooth data download.
 
