@@ -19,7 +19,7 @@ jobs:
       - name: sync files
         run: |
           #ls -la
-          rsync -avz --exclude '.git*' ./ ubuntu@43.138.250.245:/home/ubuntu/capstone/
+          rsync -r --exclude '.git*' ./ ubuntu@43.138.250.245:/home/ubuntu/capstone/
           #ssh ubuntu@43.138.250.245 "command here"
       - name: cleanup
         run: rm -rf ~/.ssh
