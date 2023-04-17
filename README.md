@@ -66,7 +66,7 @@ In the editor, type the following and edit according to your time zone to set up
 0 5 * * * /PATH_TO_YOUR_HOME/capstone/start.sh
 ```
 
-You may use the tool at https://crontab.guru/ to help getting the correct crontab expression.
+Make sure that you have made start.sh executable by setting chmod to 711. You may use the tool at https://crontab.guru/ to help getting the correct crontab expression.
 
 
 ## Usage
