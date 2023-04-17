@@ -1,21 +1,21 @@
 # README FOR CAPASTONE PROJECT BY KCT CAPITAL
 
 ## Introduction
-**Can retail traders beat the market with the help of machine learning?**
-
 One of the most challenging aspects in stocks trading is to take emotions out of your trading decisions. Greed, FOMO (fear of missing out), overconfidence, hesitations, panic - these are often the worst enemies in trading that result in losses.
 
-We believe that the machine and data can be our allies in trading as they are emotionless when it comes to making trading decisions. Advances in Financial Machine Learning (“AFML”, by Prof. Marco Lopez de Prado, 2018, John Wiley & Sons, Inc.) is one of the most renowned textbooks on applying machine learning techniques to trading. 
+In this capstone project, we have built a prototype “trading bot” using machine learning and reinforcement learning techniques. 
 
-This repository contains implementations and demonstrations of certain techniques introduced in AFML, using machine learning and reinforcement learning techniques.
+### Architecture Overview
 
-In long run, we aim to build a fully automated trading bot that can generate consistent positive returns.
+![alt text](https://github.com/waikho/MADS_Capstone/blob/main/assets/architecture.png?raw=true)
+
 
 ### Folder structure
 
     .
-    ├── .github                 # Github related files (e.g. CI/CD pipeline yml - a.k.a. Actions in github 
+    ├── .github                 # Github related files (e.g. CI/CD pipeline yml - a.k.a. Actions in github)
     ├── app                     # The main application
+    ├── assets                  # static assets including diagrams or other media file
     ├── docs                    # Documentation files
     ├── sample                  # Sample configuration files or sample scripts to help understand the main application
     ├── schema                  # Database Schema Files
@@ -26,8 +26,11 @@ In long run, we aim to build a fully automated trading bot that can generate con
 Before running the machine learning models, the data collection pipeline has to be set up to enable daily automatic update of stock data. Please follow the steps below. It is assumed that you have set up a Virtual Machine running Ubuntu v20 or above.
 
 ### 1. Install Postgres Server
-The 
+Follow this guide (https://ubuntu.com/server/docs/databases-postgresql) to install Postgres SQL server. Then set up an user account.
+
 ### 2. Setup Postgres Schema
+Create a new database. Then grant all privileges under the database to the user created in step 1. Load the SQL files under the /schema folder to the database to create all necessary tables. 
+
 ### 3. Register Alpaca Account
 Register an account at https://app.alpaca.markets/signup. Only paper trading account is required to run this repository and acquire non-realtime data. Once an account is created, you can visit https://app.alpaca.markets/paper/dashboard/overview and choose "View API Keys" at the right hand side of the screen to obtain your API key.
 
