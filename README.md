@@ -26,7 +26,7 @@ In this capstone project, we have built a prototype “trading bot” using mach
 Before running the machine learning models, the data collection pipeline has to be set up to enable daily automatic update of stock data. Please follow the steps below. It is assumed that you have set up a Virtual Machine running Ubuntu v20 or above.
 
 ### 1. Install Postgres Server
-Follow this guide (https://ubuntu.com/server/docs/databases-postgresql) to install Postgres SQL server. Then set up an user account.
+Follow this guide (https://ubuntu.com/server/docs/databases-postgresql) to install Postgres SQL server. Then set up a user account.
 
 ### 2. Setup Postgres Schema
 Create a new database. Then grant all privileges under the database to the user created in step 1. Load the SQL files under the /schema folder to the database to create all necessary tables. 
