@@ -3,11 +3,10 @@
 
 import gym
 from gym import spaces
-from enum import Enum
+from enum import Enum111
 
 import numpy as np
 import pandas as pd
-import matplotlib
 import matplotlib.pyplot as plt
 
 from statsmodels.tsa.stattools import coint, adfuller

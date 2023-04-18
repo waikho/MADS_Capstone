@@ -10,8 +10,6 @@ Some parts of the code has been modified to by compatible with Python 3
 import numpy as np
 import pandas as pd
 
-import tqdm
-
 # Snippet 2.4, page 39, The Symmetric CUSUM Filter.
 def cusum_filter(raw_time_series, threshold, time_stamps=True):
     """

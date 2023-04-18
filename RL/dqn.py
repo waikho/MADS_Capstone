@@ -1,26 +1,18 @@
 #Code credit: https://github.com/jeffreyyu0602/ZheShang/tree/0cebb2ec90a5921d06a4d117e9202cca1ae511fc
 #With modifications
 
-from collections import namedtuple, deque
-
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
 
-import gym
+from collections import namedtuple, deque
 import math
 import random
-import numpy as np
-import pandas as pd
-import matplotlib
-import matplotlib.pyplot as plt
 
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
-
 
 #memory class
 class ReplayMemory(object):
@@ -46,35 +38,17 @@ class DQN(nn.Module):   #PyTorch's Module class
         super(DQN, self).__init__()
         self.model = nn.Sequential(
             nn.Linear(input_size, 256),
-            #nn.InstanceNorm1d(256),  # instance normalization layer
-            #nn.ReLU(),
             nn.LeakyReLU(),        #try LeakyReLU
-            #nn.Tanh(),   # use Hyperbolic Tangent activation function
-            #nn.ELU(),
             nn.Dropout(0.5),       #increased from 0.25
             nn.Linear(256, 256),
-            #nn.InstanceNorm1d(256),  # instance normalization layer
-            #nn.ReLU(),
             nn.LeakyReLU(),        #try LeakyReLu
-            #nn.Tanh(),
-            #nn.ELU(),
             nn.Dropout(0.5),       #increased from 0.25
             nn.Linear(256, 256),   # new layer; try 256 -> 256
-            #nn.InstanceNorm1d(128),  # instance normalization layer
-            #nn.ReLU(),             # new activation function
             nn.LeakyReLU(),        #try LeakyReLU
-            #nn.Tanh(),   # use Hyperbolic Tangent activation function
-            #nn.ELU(),
             nn.Dropout(0.5),      # new dropout layer; increased from 0.25
             nn.Linear(256, n_actions),   #try 256 neurons
-            #nn.Softmax(dim=1)
             nn.Sigmoid()
         )
-        
-        # # He initialization for linear layers
-        # for m in self.modules():
-        #     if isinstance(m, nn.Linear):
-        #         init.kaiming_normal_(m.weight.data)
         
         self.device = device
 
@@ -87,10 +61,8 @@ class DQN(nn.Module):   #PyTorch's Module class
         #global steps_done
         sample = random.random()
 
-        #0.05 + (0.9 - 0.05) * exp(-1 * steps_done/200)
         eps_threshold = EPS_END + (EPS_START - EPS_END) * \
             math.exp(-1. * steps_done / EPS_DECAY)
-        #steps_done += 1
         if sample > eps_threshold:   #epsilon-greedy: at first, more random less nn; gradually more nn less random
             with torch.no_grad():   #disable tracking of grad in autograd; reduce memory usage and speed up computations; no backprop
                 #t.max(1) = largest column value of each row.
@@ -135,10 +107,7 @@ class DQN(nn.Module):   #PyTorch's Module class
         #state_action values returned by policy network; difference = loss
 
         #BCELoss best for binary classification
-        #criterion = nn.SmoothL1Loss()
-        #criterion = nn.MSELoss()
         criterion = nn.BCELoss(reduction='mean')
-        #criterion = nn.L1Loss()
         loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
 
         #Optimize the model

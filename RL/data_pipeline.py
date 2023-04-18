@@ -1,4 +1,5 @@
-#import config
+import db_config
+
 import psycopg
 import pandas as pd
 import numpy as np
@@ -21,17 +22,8 @@ if is_ipython:
 
 plt.ion()
 
-
-#create secrete
-def pgDictToConn(secretDict):
-    pgStrs = []
-    for key in secretDict:
-        pgStrs.append('{}={}'.format(key, secretDict[key]))
-    return ' '.join(pgStrs)
-
-
 #get daily prices
-def getDailyPrices(symbol_lst, pgConnStr):
+def getDailyPrices(symbol_lst, pgConnStr=db_config.pgConnStr):
     dfs = []
 
     with psycopg.connect(pgConnStr) as conn:
@@ -67,7 +59,7 @@ def getDailyPrices(symbol_lst, pgConnStr):
     
 
 #get distinct tickers from daily prices
-def getDailyPricesTickersLst(pgConnStr):
+def getDailyPricesTickersLst(pgConnStr=db_config.pgConnStr):
     with psycopg.connect(pgConnStr) as conn:
         with conn.cursor() as cur:
             stmt = '''SELECT DISTINCT symbol FROM alpaca_daily_selected'''
