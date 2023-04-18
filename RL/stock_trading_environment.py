@@ -3,7 +3,7 @@
 
 import gym
 from gym import spaces
-from enum import Enum111
+from enum import Enum
 
 import numpy as np
 import pandas as pd

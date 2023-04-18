@@ -6,7 +6,6 @@ Perform grid serach/ hyperparameter tuning for selected models.
 from afml.cross_validation.cross_validation import ml_cross_val_score
 from afml.ensemble.sb_bagging import SequentiallyBootstrappedBaggingClassifier
 
-
 import numpy as np
 import pandas as pd
 import time
