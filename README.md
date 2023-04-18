@@ -16,7 +16,7 @@ In this capstone project, we have built a prototype “trading bot” using mach
     ├── .github                 # Github related files (e.g. CI/CD pipeline yml - a.k.a. Actions in github)
     ├── app                     # The data pipeline application
     ├── assets                  # static assets including diagrams or other media file
-    ├── sample                  # Sample configuration files or sample scripts to help understand the data pipeline application
+    ├── sample                  # Sample configuration files or sample scripts for the data pipeline application
     ├── schema                  # Database Schema Files
     ├── ML                      # Modules and Notebook Files for Meta-Labeling & the Triple Barrier Method
     ├── RL                      # Modules and Notebook Files for Reinforcement Learning
