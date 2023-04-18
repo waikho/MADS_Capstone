@@ -14,15 +14,15 @@ In this capstone project, we have built a prototype “trading bot” using mach
 
     .
     ├── .github                 # Github related files (e.g. CI/CD pipeline yml - a.k.a. Actions in github)
-    ├── app                     # The main application
+    ├── app                     # The data pipeline application
     ├── assets                  # static assets including diagrams or other media file
-    ├── docs                    # Documentation files
-    ├── sample                  # Sample configuration files or sample scripts to help understand the main application
+    ├── sample                  # Sample configuration files or sample scripts to help understand the data pipeline application
     ├── schema                  # Database Schema Files
-    ├── scripts                 # Script files that is not part of the main applicaiton but neccessary to enable the pipeline (e.g. crontab)
+    ├── ML                      # Modules and Notebook Files for Meta-Labeling & the Triple Barrier Method
+    ├── RL                      # Modules and Notebook Files for Reinforcement Learning
     └── README.md
 
-## Setup
+## Setting up the Data Collection Pipeline
 Before running the machine learning models, the data collection pipeline has to be set up to enable daily automatic update of stock data. Please follow the steps below. It is assumed that you have set up a Virtual Machine running Ubuntu v20 or above.
 
 ### 1. Install Postgres Server
@@ -71,5 +71,15 @@ Make sure that you have made start.sh executable by setting chmod to 711. You ma
 
 ## Usage
 ### 1. Meta-Labeling & the Triple Barrier Method
-### 2. Reinforcement Learning
+#### Setting up
+Copy the db_config-sample.py to db_config.py in the ML directory.
+Create a Postgres user with read-only access to the database and update db_config.py accordingly.
+Run pip to install the requirements.txt within the directory.
+#### Training the model
 
+### 2. Reinforcement Learning
+#### Setting up
+Copy the db_config-sample.py to db_config.py in the ML directory.
+Create a Postgres user with read-only access to the database and update db_config.py accordingly.
+Run pip to install the requirements.txt within the directory.
+#### Training the model
