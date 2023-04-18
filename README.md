@@ -19,7 +19,7 @@ In this capstone project, we have built a prototype “trading bot” using mach
     ├── sample                  # Sample configuration files or sample scripts for the data pipeline application
     ├── schema                  # Database Schema Files
     ├── ML                      # Modules and Notebook Files for Meta-Labeling & the Triple Barrier Method
-    ├── RL                      # Modules and Notebook Files for Reinforcement Learning
+    ├── RL                      # Modules and Notebook Files for Reinforcement Learning for Pairs Trading
     └── README.md
     
 ### Requirements
@@ -72,17 +72,25 @@ In the editor, type the following and edit according to your time zone to set up
 Make sure that you have made start.sh executable by setting chmod to 711. You may use the tool at https://crontab.guru/ to help getting the correct crontab expression.
 
 
-## Usage
+## Model Training Usage
 ### 1. Meta-Labeling & the Triple Barrier Method
 #### Setting up
 - Copy the db_config-sample.py to db_config.py in the ML directory.
 - Create a Postgres user with read-only access to the database and update db_config.py accordingly.
 - Run pip to install the requirements.txt within the directory.
-#### Training the model
 
-### 2. Reinforcement Learning
+#### Training the model
+Open and run modelling.ipynb
+
+#### Other Illustrations
+- Run labeling.ipynb to compare different trend labelling strategies
+- Run demo.ipynb for a brief understanding about the functions in modeling_main.py
+
+
+### 2. Reinforcement Learning for Pairs Trading
 #### Setting up
-- Copy the db_config-sample.py to db_config.py in the ML directory.
+- Copy the db_config-sample.py to db_config.py in the RL directory.
 - Create a Postgres user with read-only access to the database and update db_config.py accordingly.
 - Run pip to install the requirements.txt within the directory.
-#### Training the model
+#### Training the Deep Q-Network
+Open and run Pair_Trading_DQN.ipynb
