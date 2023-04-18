@@ -21,6 +21,9 @@ In this capstone project, we have built a prototype “trading bot” using mach
     ├── ML                      # Modules and Notebook Files for Meta-Labeling & the Triple Barrier Method
     ├── RL                      # Modules and Notebook Files for Reinforcement Learning
     └── README.md
+    
+### Requirements
+All python scripts are developed under Python 3.10+. Please make sure that this Python version requirement is met.
 
 ## Setting up the Data Collection Pipeline
 Before running the machine learning models, the data collection pipeline has to be set up to enable daily automatic update of stock data. Please follow the steps below. It is assumed that you have set up a Virtual Machine running Ubuntu v20 or above.
