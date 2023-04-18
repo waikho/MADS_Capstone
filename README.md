@@ -79,7 +79,7 @@ Make sure that you have made start.sh executable by setting chmod to 711. You ma
 
 ### 2. Reinforcement Learning
 #### Setting up
-Copy the db_config-sample.py to db_config.py in the ML directory.
-Create a Postgres user with read-only access to the database and update db_config.py accordingly.
-Run pip to install the requirements.txt within the directory.
+- Copy the db_config-sample.py to db_config.py in the ML directory.
+- Create a Postgres user with read-only access to the database and update db_config.py accordingly.
+- Run pip to install the requirements.txt within the directory.
 #### Training the model
