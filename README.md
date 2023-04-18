@@ -41,11 +41,11 @@ Register an account at https://app.alpaca.markets/signup. Only paper trading acc
 ### 4. Register PubProxy Account
 Visit http://pubproxy.com/ and create an API key for free. Free API usage is limited and of lower priority. You may wish to upgrade to premium API for unlimited proxy requests to ensure smooth data download.
 
-### 5. Setup Remote SSH key for CI/CD (Optional)
+### 5. Setup Remote SSH Key for CI/CD (Optional)
 ### 6. Create config.py
 Copy sample/config-sample.py to app/config.py and update all actual crendtials acquired from the previous steps.
 
-### 7. Install required modules
+### 7. Install Required Modules
 Run
 ```
 pip install -r requirements.txt
@@ -79,7 +79,7 @@ Make sure that you have made start.sh executable by setting chmod to 711. You ma
 - Create a Postgres user with read-only access to the database and update db_config.py accordingly.
 - Run pip to install the requirements.txt within the directory.
 
-#### Training the model
+#### Training the Model
 Open and run modelling.ipynb
 
 #### Other Illustrations
@@ -92,5 +92,6 @@ Open and run modelling.ipynb
 - Copy the db_config-sample.py to db_config.py in the RL directory.
 - Create a Postgres user with read-only access to the database and update db_config.py accordingly.
 - Run pip to install the requirements.txt within the directory.
-#### Training the Deep Q-Network
+
+#### Identifying Pairs Through Clustering and Training the Deep Q-Network
 Open and run Pair_Trading_DQN.ipynb
