@@ -92,5 +92,6 @@ Open and run modelling.ipynb
 - Copy the db_config-sample.py to db_config.py in the RL directory.
 - Create a Postgres user with read-only access to the database and update db_config.py accordingly.
 - Run pip to install the requirements.txt within the directory.
-#### Training the Deep Q-Network
+
+#### Identifying Pairs Through Clustering and Training the Deep Q-Network
 Open and run Pair_Trading_DQN.ipynb
