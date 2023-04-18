@@ -1,13 +1,7 @@
-import pandas as pd
-import numpy as np
-
-import config
+import crossvalidation as cv
+import features.bars as bars  
+import features.marketindicators as mkt
 import getdata as gd
-import platform, os
-import datetime
-import time
-import math
-
 import strategy.trendlabeling as tlb
 import strategy.ma_crossover as ma
 
@@ -15,16 +9,21 @@ import afml.filters.filters as flt
 import afml.labeling.triplebarrier as tbar
 import afml.util.volatility as vol
 from afml.sample_weights.attribution import get_weights_by_return
-import features.bars as bars  
-import features.marketindicators as mkt
 from afml.cross_validation.cross_validation import PurgedKFold
-import crossvalidation as cv
+
+import datetime
+import math
+import numpy as np
+import pandas as pd
+import platform, os
+import time
+import warnings
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 
-import warnings
+
 warnings.filterwarnings('ignore')
 
 
@@ -35,6 +34,7 @@ def get_data(ticker):
     df.index = df.tranx_date
 
     return df
+
 
 def get_index(ticker_df, index_ticker='SPY'):
     """
@@ -96,6 +96,7 @@ def trend_labeling(dollar_bars, window_size_max=5):
 
     return dollar_bars
 
+
 def ma_crossover_labeling(dollar_bars, exp=True):
     """
     Perform trend_labeling for one ticker
@@ -110,6 +111,7 @@ def ma_crossover_labeling(dollar_bars, exp=True):
     dollar_bars['slow_ma'] = dollar_bars['slow_ma'].shift(1) # remove lookahead bias    
 
     return dollar_bars
+
 
 def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=20, ptsl=[1,1], minRet=0.0):
     """
@@ -166,6 +168,7 @@ def meta_labeling(dollar_bars, span=50, filter_multiple=1.0, num_days=20, ptsl=[
 
     return events, dollar_bars
 
+
 def features_momentum(dollar_bars):
     """
     add momentum features to dollar bar df of one ticker
@@ -179,6 +182,7 @@ def features_momentum(dollar_bars):
 
     return dollar_bars
 
+
 def features_volatility(dollar_bars):
     """
     add volatility features to dollar bar df of one ticker
@@ -191,6 +195,7 @@ def features_volatility(dollar_bars):
     dollar_bars['volatility15'] = log_ret.rolling(window=15, min_periods=15, center=False).std().shift(1)
 
     return dollar_bars
+
 
 def features_log_returns(dollar_bars):
     """
@@ -207,6 +212,7 @@ def features_log_returns(dollar_bars):
 
     return dollar_bars
 
+
 def features_serial_correlation(dollar_bars, corr_period=50):
     """
     add serial correlation at vairous -t to dollar bar df of one ticker
@@ -222,6 +228,7 @@ def features_serial_correlation(dollar_bars, corr_period=50):
 
     return dollar_bars
 
+
 def features_SPY_RS(dollar_bars, dollar_bars_SPY):
     """
     add relative strength SPY at various -t to dollar bar df of one ticker
@@ -235,19 +242,6 @@ def features_SPY_RS(dollar_bars, dollar_bars_SPY):
 
     return dollar_bars
 
-
-def features_COMP_RS(dollar_bars, dollar_bars_COMP):
-    """
-    add relative strength SPY at various -t to dollar bar df of one ticker
-    
-    """
-    dollar_bars['rs_COMP_1'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(1)
-    dollar_bars['rs_COMP_2'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(2)
-    dollar_bars['rs_COMP_3'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(3)
-    dollar_bars['rs_COMP_4'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(4)
-    dollar_bars['rs_COMP_5'] = mkt.get_relative_strength(dollar_bars.close, dollar_bars_COMP.close).shift(5)
-
-    return dollar_bars
 
 def error_df(symbol, model_metrics, message):
     """
@@ -265,6 +259,7 @@ def error_df(symbol, model_metrics, message):
     model_metrics['event_st_date'] = np.nan
     model_metrics['event_en_date'] = np.nan
     return model_metrics
+
 
 def backtest_metrics(events, X_test, y_test, y_pred, transaction_cost=0.0, slippage=0.0, risk_free_rate=0.036):
     """
@@ -319,6 +314,7 @@ def backtest_metrics(events, X_test, y_test, y_pred, transaction_cost=0.0, slipp
     bt_metrics['sharpe_ratio'] = round((avg_daily_return - daily_risk_free_rate) / std_daily_return * np.sqrt(252), 2)
 
     return bt_metrics
+
 
 def modeling(symbol, events, dollar_bars, type='sequential_bootstrapping_SVC', transaction_cost=0.0, slippage=0.0, risk_free_rate=0.036, RANDOM_STATE = 42):
     """
@@ -432,7 +428,8 @@ def modeling(symbol, events, dollar_bars, type='sequential_bootstrapping_SVC', t
 
     return clf, model_metrics
 
-def get_one_model(ticker, type='sequential_bootstrapping_SVC', method='trend_labeling', config=config.pgSecrets):
+
+def get_one_model(ticker, type='sequential_bootstrapping_SVC', method='trend_labeling'):
 
     """
     get the meta-labelled model for one ticker
@@ -444,7 +441,7 @@ def get_one_model(ticker, type='sequential_bootstrapping_SVC', method='trend_lab
     
     """
 
-    ticker_df = gd.getTicker_Daily(ticker, config=config)
+    ticker_df = gd.getTicker_Daily(ticker)
     ticker_df.index = pd.to_datetime(ticker_df.tranx_date)
     index_SPY = get_index(ticker_df, 'SPY')
     index_SPY.index = pd.to_datetime(index_SPY.tranx_date)
@@ -480,7 +477,8 @@ def get_one_model(ticker, type='sequential_bootstrapping_SVC', method='trend_lab
 
     return clf, model_metrics
 
-def get_multiple_models(ticker_lst, type='sequential_bootstrapping_SVC', method='trend_labeling', config=config.pgSecrets):
+
+def get_multiple_models(ticker_lst, type='sequential_bootstrapping_SVC', method='trend_labeling'):
     """
     :param ticker_lst: (list) of ticker symbols
 
@@ -493,7 +491,7 @@ def get_multiple_models(ticker_lst, type='sequential_bootstrapping_SVC', method=
 
     for i, ticker in enumerate(ticker_lst):
         print('Processing {}/{} {}...'.format(str(i+1), ln, ticker))
-        clf, model_metrics = get_one_model(ticker, type=type, method=method, config=config)
+        clf, model_metrics = get_one_model(ticker, type=type, method=method)
         clfs[ticker] = clf
         model_metrics_df = pd.concat([model_metrics_df, model_metrics], ignore_index=True)
         print('Modeling completed {}/{} {}'.format(str(i+1), ln, ticker))

@@ -3,15 +3,16 @@
 Perform grid serach/ hyperparameter tuning for selected models.
 """
 
+from afml.cross_validation.cross_validation import ml_cross_val_score
+from afml.ensemble.sb_bagging import SequentiallyBootstrappedBaggingClassifier
 
-import time
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+import time
 
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
-from afml.cross_validation.cross_validation import ml_cross_val_score
-from afml.ensemble.sb_bagging import SequentiallyBootstrappedBaggingClassifier
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 from sklearn.tree import DecisionTreeClassifier
 
